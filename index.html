@@ -3,331 +3,1071 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ababacar Sadikh FAYE - Portfolio</title>
+    <title>Ababacar Sadikh FAYE — Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --glow: rgba(102,126,234,0.3);
+            --dark: #0c0c18;
+            --darker: #07070f;
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(255,255,255,0.08);
+            --text: #eeeef5;
+            --text-muted: #8888aa;
+            --success: #43e97b;
+            --code-bg: #0d1117;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            line-height: 1.6;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--darker);
+            color: var(--text);
+            line-height: 1.7;
             overflow-x: hidden;
         }
 
-        .container {
+        /* ── CURSOR GLOW ── */
+        .cursor-glow {
+            pointer-events: none;
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            transition: left 0.4s ease, top 0.4s ease;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            background: rgba(7, 7, 15, 0.8);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 0 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+        }
+
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1em;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88em;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(102,126,234,0.1);
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white !important;
+            padding: 9px 22px !important;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85em;
+            letter-spacing: 0.02em;
+            transition: opacity 0.2s, transform 0.2s !important;
+        }
+        .nav-cta:hover { opacity: 0.85; transform: translateY(-1px) !important; background: unset; }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 60px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 70% 70% at 60% 30%, rgba(102,126,234,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 50% at 20% 80%, rgba(118,75,162,0.15) 0%, transparent 55%),
+                radial-gradient(ellipse 30% 30% at 85% 70%, rgba(240,147,251,0.1) 0%, transparent 50%);
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(102,126,234,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102,126,234,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 80px;
+            align-items: center;
         }
 
-        header {
-            text-align: center;
-            padding: 60px 20px;
-            animation: fadeInDown 1s ease-out;
+        .hero-left { max-width: 680px; }
+
+        .hero-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
         }
 
-        .profile-image {
-            width: 180px;
-            height: 180px;
+        .eyebrow-line {
+            height: 2px;
+            width: 40px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 1px;
+        }
+
+        .eyebrow-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            color: var(--primary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.8em, 6vw, 5em);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 .name-line {
+            display: block;
+            background: linear-gradient(135deg, var(--text) 30%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 .accent-line {
+            display: block;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            color: var(--text-muted);
+            font-size: 1.1em;
+            line-height: 1.75;
+            margin-bottom: 40px;
+            max-width: 520px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 14px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.25s;
+            box-shadow: 0 8px 32px rgba(102,126,234,0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(102,126,234,0.5);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text);
+            padding: 14px 28px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.25s;
+        }
+
+        .btn-secondary:hover {
+            border-color: rgba(102,126,234,0.4);
+            background: rgba(102,126,234,0.08);
+        }
+
+        /* ── AVATAR ── */
+        .hero-avatar {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar-ring {
+            width: 220px;
+            height: 220px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            margin: 0 auto 30px;
+            padding: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--accent), var(--secondary));
+            animation: spin-slow 8s linear infinite;
+        }
+
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--dark);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 64px;
-            color: white;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: float 3s ease-in-out infinite;
+            font-family: 'Syne', sans-serif;
+            font-size: 3.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: var(--primary);
+            animation: spin-slow 8s linear infinite reverse;
         }
 
-        h1 {
-            color: white;
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.3em;
-            margin-bottom: 10px;
-        }
-
-        .university {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1em;
-            font-style: italic;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            margin: 30px 0;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-        }
-
-        h2 {
-            color: #667eea;
-            font-size: 2.2em;
-            margin-bottom: 25px;
-            position: relative;
-            padding-bottom: 15px;
-        }
-
-        h2:after {
-            content: '';
+        .avatar-badge {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 2px;
+            bottom: 10px;
+            right: -10px;
+            background: rgba(67,233,123,0.15);
+            border: 1px solid rgba(67,233,123,0.3);
+            color: var(--success);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
+        .dot-green {
+            width: 7px;
+            height: 7px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50% { opacity:0.5; transform:scale(1.4); }
+        }
+
+        /* ── STATS ── */
+        .stats-bar {
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(255,255,255,0.02);
+            padding: 28px 60px;
+        }
+
+        .stats-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+
+        .stat {
+            padding: 0 30px;
+            border-right: 1px solid var(--card-border);
+        }
+
+        .stat:last-child { border-right: none; }
+        .stat:first-child { padding-left: 0; }
+
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.82em;
+            color: var(--text-muted);
+        }
+
+        /* ── SECTIONS ── */
+        .section {
+            padding: 100px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75em;
+            color: var(--primary);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-tag::before {
+            content: '';
+            display: block;
+            width: 28px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 1px;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.8em, 3.5vw, 2.8em);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            line-height: 1.15;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 1.05em;
+            max-width: 520px;
+            margin-bottom: 60px;
+        }
+
+        /* ── EXPERTISE CARDS ── */
         .expertise-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
         }
 
-        .expertise-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
+        .exp-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 36px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: default;
         }
 
-        .expertise-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        .exp-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        .expertise-item h3 {
-            font-size: 1.5em;
+        .exp-card:hover {
+            border-color: rgba(102,126,234,0.3);
+            background: rgba(102,126,234,0.06);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .exp-card:hover::before { opacity: 1; }
+
+        .exp-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: rgba(102,126,234,0.15);
+            border: 1px solid rgba(102,126,234,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            margin-bottom: 22px;
+        }
+
+        .exp-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.15em;
+            font-weight: 700;
             margin-bottom: 10px;
         }
 
-        .expertise-item p {
-            font-size: 0.95em;
-            opacity: 0.9;
+        .exp-card p {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            line-height: 1.65;
         }
 
-        .icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-
-        .skills-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .skill-tag {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 0.95em;
-            transition: transform 0.3s ease;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .skill-tag:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
-        }
-
-        .contact-info {
+        /* ── SKILLS ── */
+        .skills-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
         }
 
-        .contact-item {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            padding: 20px;
+        .skill-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             border-radius: 12px;
-            border-left: 4px solid #667eea;
-            transition: all 0.3s ease;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9em;
+            transition: all 0.25s;
+            cursor: default;
         }
 
-        .contact-item:hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-            transform: translateX(10px);
+        .skill-item:hover {
+            border-color: rgba(102,126,234,0.35);
+            background: rgba(102,126,234,0.07);
+            transform: translateX(4px);
         }
 
-        .contact-item strong {
-            color: #667eea;
+        .skill-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            flex-shrink: 0;
+        }
+
+        /* ── TUTORIAL SECTION ── */
+        .tuto-section {
+            padding: 80px 60px;
+            background: rgba(255,255,255,0.015);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .tuto-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tuto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+            margin-top: 50px;
+        }
+
+        .tuto-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
             display: block;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tuto-card:hover {
+            border-color: rgba(102,126,234,0.4);
+            transform: translateY(-6px);
+            box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+        }
+
+        .tuto-thumb {
+            height: 180px;
+            background: linear-gradient(135deg, #0d1117 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tuto-thumb::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(102,126,234,0.2) 0%, transparent 70%);
+        }
+
+        .tuto-thumb-icon {
+            font-size: 4em;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 20px rgba(102,126,234,0.5));
+        }
+
+        .tuto-thumb-code {
+            position: absolute;
+            bottom: 14px;
+            left: 16px;
+            right: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72em;
+            color: rgba(102,126,234,0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tuto-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(67,233,123,0.15);
+            border: 1px solid rgba(67,233,123,0.3);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72em;
+            font-weight: 600;
+        }
+
+        .tuto-body {
+            padding: 26px 28px;
+        }
+
+        .tuto-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .tuto-tag {
+            background: rgba(102,126,234,0.1);
+            border: 1px solid rgba(102,126,234,0.2);
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .tuto-body h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .tuto-body p {
+            color: var(--text-muted);
+            font-size: 0.88em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .tuto-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--card-border);
+            padding-top: 16px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        .tuto-arrow {
+            color: var(--primary);
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+
+        .tuto-card:hover .tuto-arrow { transform: translateX(4px); }
+
+        .tuto-coming {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .coming-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72em;
+            font-weight: 600;
+        }
+
+        /* ── CONTACT ── */
+        .contact-section {
+            padding: 100px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 50px;
+        }
+
+        .contact-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 26px;
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            transition: all 0.25s;
+        }
+
+        .contact-card:hover {
+            border-color: rgba(102,126,234,0.3);
+            background: rgba(102,126,234,0.05);
+        }
+
+        .contact-ico {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(102,126,234,0.12);
+            border: 1px solid rgba(102,126,234,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+
+        .contact-info strong {
+            display: block;
+            font-size: 0.8em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--primary);
             margin-bottom: 5px;
         }
 
+        .contact-info span {
+            font-size: 0.92em;
+            color: var(--text-muted);
+        }
+
+        /* ── FOOTER ── */
         footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: white;
-            font-size: 0.9em;
+            border-top: 1px solid var(--card-border);
+            padding: 36px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .footer-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1em;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .footer-copy {
+            font-size: 0.82em;
+            color: var(--text-muted);
         }
 
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-20px);
-            }
+        /* ── REVEAL ANIMATIONS ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
         }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-            
-            .subtitle {
-                font-size: 1.1em;
-            }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-            .card {
-                padding: 25px;
-            }
+        /* ── DIVIDER ── */
+        .full-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--card-border) 30%, var(--card-border) 70%, transparent);
+        }
 
-            .expertise-grid {
-                grid-template-columns: 1fr;
-            }
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            nav { padding: 0 24px; }
+            .nav-links .nav-link:not(.nav-cta):not(.active) { display: none; }
+            .hero { padding: 100px 24px 60px; }
+            .hero-content { grid-template-columns: 1fr; gap: 50px; }
+            .hero-avatar { display: none; }
+            .stats-bar { padding: 20px 24px; }
+            .stats-inner { grid-template-columns: repeat(2,1fr); gap: 20px; }
+            .stat { border-right: none; padding: 0; }
+            .section { padding: 60px 24px; }
+            .expertise-grid { grid-template-columns: 1fr; }
+            .skills-container { grid-template-columns: repeat(2,1fr); }
+            .tuto-section { padding: 60px 24px; }
+            .contact-section { padding: 60px 24px; }
+            .contact-grid { grid-template-columns: 1fr; }
+            footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="profile-image">ASF</div>
-            <h1>Ababacar Sadikh FAYE</h1>
-            <p class="subtitle">Attaché Temporaire d'Enseignement et de Recherche</p>
-            <p class="university">Université de Pau et des Pays de l'Adour</p>
-        </header>
 
-        <div class="card">
-            <h2>À Propos</h2>
-            <p style="font-size: 1.1em; color: #555; line-height: 1.8;">
-                Passionné par l'électronique et l'informatique, je me consacre à l'enseignement supérieur et à la recherche. 
-                Mon expertise se concentre sur le développement de systèmes automatisés innovants, la conception d'objets 
-                connectés et l'élaboration de solutions technologiques avancées. Mon objectif principal est le partage et 
-                la transmission des connaissances aux nouvelles générations d'ingénieurs et de chercheurs.
-            </p>
-        </div>
+<div class="cursor-glow" id="cursorGlow"></div>
 
-        <div class="card">
-            <h2>Domaines d'Expertise</h2>
-            <div class="expertise-grid">
-                <div class="expertise-item">
-                    <div class="icon">🎓</div>
-                    <h3>Enseignement Supérieur</h3>
-                    <p>Formation et transmission des connaissances en électronique et informatique</p>
-                </div>
-                <div class="expertise-item">
-                    <div class="icon">⚙️</div>
-                    <h3>Systèmes Automatisés</h3>
-                    <p>Développement et optimisation de solutions d'automatisation</p>
-                </div>
-                <div class="expertise-item">
-                    <div class="icon">🌐</div>
-                    <h3>Objets Connectés</h3>
-                    <p>Conception et déploiement de dispositifs IoT innovants</p>
-                </div>
-                <div class="expertise-item">
-                    <div class="icon">💡</div>
-                    <h3>Solutions Technologiques</h3>
-                    <p>Innovation et développement de technologies de pointe</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Compétences Techniques</h2>
-            <div class="skills-list">
-                <span class="skill-tag">Électronique</span>
-                <span class="skill-tag">Informatique</span>
-                <span class="skill-tag">Systèmes Embarqués</span>
-                <span class="skill-tag">IoT</span>
-                <span class="skill-tag">Automatisation</span>
-                <span class="skill-tag">Recherche & Développement</span>
-                <span class="skill-tag">Enseignement</span>
-                <span class="skill-tag">Innovation Technologique</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Contact</h2>
-            <div class="contact-info">
-                <div class="contact-item">
-                    <strong>🏛️ Institution</strong>
-                    Université de Pau et des Pays de l'Adour
-                </div>
-                <div class="contact-item">
-                    <strong>📍 Localisation</strong>
-                    Pau, Nouvelle-Aquitaine, France
-                </div>
-                <div class="contact-item">
-                    <strong>💼 Fonction</strong>
-                    ATER - Enseignement & Recherche
-                </div>
-                <div class="contact-item">
-                    <strong>🔬 Spécialités</strong>
-                    Électronique & Informatique
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <p>&copy; 2025 Ababacar Sadikh FAYE - Tous droits réservés</p>
-            <p style="margin-top: 10px; opacity: 0.8;">Attaché Temporaire d'Enseignement et de Recherche</p>
-        </footer>
+<!-- ── NAV ── -->
+<nav>
+    <a href="#" class="nav-logo">ASF</a>
+    <div class="nav-links">
+        <a href="#about" class="nav-link active">À propos</a>
+        <a href="#expertise" class="nav-link">Expertise</a>
+        <a href="#tutoriels" class="nav-link">Tutoriels</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <a href="#contact" class="nav-link nav-cta">Me contacter</a>
     </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero" id="about">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+        <div class="hero-left">
+            <div class="hero-eyebrow">
+                <div class="eyebrow-line"></div>
+                <span class="eyebrow-text">ATER · UPPA · Pau, France</span>
+            </div>
+            <h1>
+                <span class="name-line">Ababacar</span>
+                <span class="name-line">Sadikh</span>
+                <span class="accent-line">FAYE</span>
+            </h1>
+            <p class="hero-desc">
+                Attaché Temporaire d'Enseignement et de Recherche à l'Université de Pau et des Pays de l'Adour. Passionné par l'électronique, les systèmes embarqués et l'IoT — je conçois des solutions technologiques et les transmets aux ingénieurs de demain.
+            </p>
+            <div class="hero-btns">
+                <a href="#expertise" class="btn-primary">Voir mon expertise ↓</a>
+                <a href="#tutoriels" class="btn-secondary">📚 Tutoriels</a>
+            </div>
+        </div>
+        <div class="hero-avatar">
+            <div class="avatar-ring">
+                <div class="avatar-inner">ASF</div>
+            </div>
+            <div class="avatar-badge">
+                <div class="dot-green"></div>
+                Disponible
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── STATS ── -->
+<div class="stats-bar">
+    <div class="stats-inner">
+        <div class="stat">
+            <div class="stat-num">ATER</div>
+            <div class="stat-label">Statut actuel</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">UPPA</div>
+            <div class="stat-label">Université de Pau</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">IoT</div>
+            <div class="stat-label">Spécialité principale</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">R&D</div>
+            <div class="stat-label">Recherche & Développement</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── EXPERTISE ── -->
+<div class="full-divider"></div>
+<section class="section reveal" id="expertise">
+    <div class="section-tag">Domaines</div>
+    <h2 class="section-title">Domaines d'Expertise</h2>
+    <p class="section-subtitle">Une approche pluridisciplinaire qui unit l'enseignement, la recherche et l'innovation technologique.</p>
+
+    <div class="expertise-grid">
+        <div class="exp-card">
+            <div class="exp-icon">🎓</div>
+            <h3>Enseignement Supérieur</h3>
+            <p>Formation et transmission des connaissances en électronique et informatique auprès d'étudiants en cursus ingénieur et master.</p>
+        </div>
+        <div class="exp-card">
+            <div class="exp-icon">⚙️</div>
+            <h3>Systèmes Automatisés</h3>
+            <p>Développement et optimisation de solutions d'automatisation industrielle et académique, de la conception au déploiement.</p>
+        </div>
+        <div class="exp-card">
+            <div class="exp-icon">🌐</div>
+            <h3>Objets Connectés (IoT)</h3>
+            <p>Conception et déploiement de dispositifs IoT : capteurs, microcontrôleurs, protocoles de communication sans fil et cloud.</p>
+        </div>
+        <div class="exp-card">
+            <div class="exp-icon">💡</div>
+            <h3>Innovation Technologique</h3>
+            <p>Veille technologique active et développement de solutions de pointe, incluant la vision par ordinateur et le Machine Learning embarqué.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── SKILLS ── -->
+<div class="full-divider"></div>
+<section class="section reveal">
+    <div class="section-tag">Compétences</div>
+    <h2 class="section-title">Compétences Techniques</h2>
+    <p class="section-subtitle">Des outils et technologies maîtrisés pour concevoir, prototyper et déployer.</p>
+
+    <div class="skills-container">
+        <div class="skill-item"><span class="skill-dot"></span>Électronique analogique & numérique</div>
+        <div class="skill-item"><span class="skill-dot"></span>Systèmes embarqués</div>
+        <div class="skill-item"><span class="skill-dot"></span>IoT & protocoles sans fil</div>
+        <div class="skill-item"><span class="skill-dot"></span>Python / C / C++</div>
+        <div class="skill-item"><span class="skill-dot"></span>Machine Learning (YOLOv8, TensorFlow)</div>
+        <div class="skill-item"><span class="skill-dot"></span>Automatisation industrielle</div>
+        <div class="skill-item"><span class="skill-dot"></span>Raspberry Pi / Arduino</div>
+        <div class="skill-item"><span class="skill-dot"></span>MQTT / Flask / API REST</div>
+        <div class="skill-item"><span class="skill-dot"></span>Recherche & Développement</div>
+    </div>
+</section>
+
+<!-- ── TUTORIELS ── -->
+<div class="full-divider"></div>
+<div class="tuto-section reveal" id="tutoriels">
+    <div class="tuto-inner">
+        <div class="section-tag">Ressources pédagogiques</div>
+        <h2 class="section-title">Tutoriels</h2>
+        <p class="section-subtitle">Des guides pratiques et détaillés pour apprendre à maîtriser les technologies que j'enseigne.</p>
+
+        <div class="tuto-grid">
+
+            <!-- TUTO 1 - YOLOv8 (active) -->
+            <a href="tutorial-yolo.html" class="tuto-card">
+                <div class="tuto-thumb">
+                    <div class="tuto-thumb-icon">🎯</div>
+                    <div class="tuto-thumb-code">yolo detect train data=dataset.yaml model=yolov8n.pt</div>
+                    <div class="tuto-badge">Disponible</div>
+                </div>
+                <div class="tuto-body">
+                    <div class="tuto-tags">
+                        <span class="tuto-tag">Python</span>
+                        <span class="tuto-tag">YOLOv8</span>
+                        <span class="tuto-tag">Computer Vision</span>
+                    </div>
+                    <h3>Détection d'Objets avec YOLOv8</h3>
+                    <p>Entraînez un modèle de vision par ordinateur et déployez-le en temps réel sur webcam — de zéro à l'IA fonctionnelle.</p>
+                    <div class="tuto-footer">
+                        <span>⏱ ~2h · Débutant → Intermédiaire</span>
+                        <span class="tuto-arrow">→</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- TUTO 2 - IoT (coming soon) -->
+            <div class="tuto-card tuto-coming">
+                <div class="tuto-thumb">
+                    <div class="tuto-thumb-icon">📡</div>
+                    <div class="tuto-thumb-code">import paho.mqtt.client as mqtt</div>
+                    <div class="coming-badge">Bientôt</div>
+                </div>
+                <div class="tuto-body">
+                    <div class="tuto-tags">
+                        <span class="tuto-tag">IoT</span>
+                        <span class="tuto-tag">MQTT</span>
+                        <span class="tuto-tag">Raspberry Pi</span>
+                    </div>
+                    <h3>Système IoT avec Raspberry Pi & MQTT</h3>
+                    <p>Connectez des capteurs, publiez des données en temps réel et créez un dashboard de supervision.</p>
+                    <div class="tuto-footer">
+                        <span>⏱ ~3h · Intermédiaire</span>
+                        <span class="tuto-arrow">→</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TUTO 3 - Embarqué (coming soon) -->
+            <div class="tuto-card tuto-coming">
+                <div class="tuto-thumb">
+                    <div class="tuto-thumb-icon">🔧</div>
+                    <div class="tuto-thumb-code">#include &lt;Arduino.h&gt;</div>
+                    <div class="coming-badge">Bientôt</div>
+                </div>
+                <div class="tuto-body">
+                    <div class="tuto-tags">
+                        <span class="tuto-tag">Arduino</span>
+                        <span class="tuto-tag">C++</span>
+                        <span class="tuto-tag">Embarqué</span>
+                    </div>
+                    <h3>Systèmes Embarqués : de l'Arduino au RTOS</h3>
+                    <p>Maîtrisez la programmation bas-niveau, les interruptions, les timers et les systèmes temps réel.</p>
+                    <div class="tuto-footer">
+                        <span>⏱ ~4h · Intermédiaire</span>
+                        <span class="tuto-arrow">→</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ── CONTACT ── -->
+<div class="full-divider"></div>
+<section class="contact-section reveal" id="contact">
+    <div class="section-tag">Me rejoindre</div>
+    <h2 class="section-title">Contact</h2>
+    <p class="section-subtitle">Enseignant-chercheur à l'UPPA, ouvert aux collaborations académiques et aux projets de recherche appliquée.</p>
+
+    <div class="contact-grid">
+        <div class="contact-card">
+            <div class="contact-ico">🏛️</div>
+            <div class="contact-info">
+                <strong>Institution</strong>
+                <span>Université de Pau et des Pays de l'Adour</span>
+            </div>
+        </div>
+        <div class="contact-card">
+            <div class="contact-ico">📍</div>
+            <div class="contact-info">
+                <strong>Localisation</strong>
+                <span>Pau, Nouvelle-Aquitaine, France</span>
+            </div>
+        </div>
+        <div class="contact-card">
+            <div class="contact-ico">💼</div>
+            <div class="contact-info">
+                <strong>Fonction</strong>
+                <span>ATER — Enseignement & Recherche</span>
+            </div>
+        </div>
+        <div class="contact-card">
+            <div class="contact-ico">🔬</div>
+            <div class="contact-info">
+                <strong>Spécialités</strong>
+                <span>Électronique, Informatique, IoT, Vision par ordinateur</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+    <span class="footer-logo">Ababacar Sadikh FAYE</span>
+    <span class="footer-copy">© 2025 · ATER · Université de Pau et des Pays de l'Adour</span>
+</footer>
+
+<script>
+    // Cursor glow
+    const glow = document.getElementById('cursorGlow');
+    document.addEventListener('mousemove', e => {
+        glow.style.left = e.clientX + 'px';
+        glow.style.top = e.clientY + 'px';
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                obs.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => obs.observe(r));
+
+    // Nav active link on scroll
+    const sections = document.querySelectorAll('section[id], div[id]');
+    const navLinks = document.querySelectorAll('.nav-link:not(.nav-cta)');
+    const navObs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { threshold: 0.4 });
+    sections.forEach(s => navObs.observe(s));
+</script>
 </body>
 </html>
