@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoriel YOLOv8 - Détection d'Objets | ASF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --dark: #0f0f1a;
+            --darker: #07070f;
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(255,255,255,0.08);
+            --text: #e8e8f0;
+            --text-muted: #8888aa;
+            --success: #43e97b;
+            --warning: #fa8231;
+            --code-bg: #0d1117;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--darker);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(7, 7, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 64px;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: var(--primary); }
+        nav .sep { color: var(--card-border); }
+        nav .current { color: var(--text); font-weight: 600; }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 420px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 80px 40px 60px;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(102,126,234,0.25) 0%, transparent 70%),
+                        radial-gradient(ellipse 40% 40% at 80% 50%, rgba(118,75,162,0.2) 0%, transparent 60%);
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(102,126,234,0.06) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(102,126,234,0.06) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .hero-content {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(102,126,234,0.15);
+            border: 1px solid rgba(102,126,234,0.3);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.82em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .badge .dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2em, 5vw, 3.8em);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.15em;
+            max-width: 620px;
+            margin-bottom: 40px;
+        }
+
+        .meta-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .meta-tag {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 0.88em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── PROGRESS NAV ── */
+        .toc-bar {
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--card-border);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .toc-bar::-webkit-scrollbar { display: none; }
+
+        .toc-inner {
+            display: flex;
+            gap: 0;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px;
+            white-space: nowrap;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            font-size: 0.85em;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .toc-item:hover { color: var(--primary); border-bottom-color: var(--primary); }
+        .toc-item.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+        .toc-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(102,126,234,0.15);
+            color: var(--primary);
+            font-size: 0.78em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── LAYOUT ── */
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 50px;
+            align-items: start;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-card h3 {
+            font-size: 0.82em;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-links { display: flex; flex-direction: column; gap: 8px; }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88em;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover {
+            color: var(--primary);
+            border-color: rgba(102,126,234,0.3);
+            background: rgba(102,126,234,0.08);
+        }
+
+        .difficulty {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .diff-bar {
+            height: 6px;
+            flex: 1;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.08);
+        }
+        .diff-bar.filled { background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+
+        /* ── SECTIONS ── */
+        .section {
+            margin-bottom: 60px;
+            scroll-margin-top: 80px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .step-num {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .section h2 {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .section p, .section li {
+            color: #b0b0cc;
+            font-size: 0.97em;
+            margin-bottom: 10px;
+        }
+
+        .section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section ul li {
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .section ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        /* ── CODE BLOCKS ── */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .code-lang {
+            font-size: 0.78em;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        .copy-btn {
+            background: rgba(102,126,234,0.15);
+            border: 1px solid rgba(102,126,234,0.25);
+            color: var(--primary);
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.78em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .copy-btn:hover { background: rgba(102,126,234,0.3); }
+        .copy-btn.copied { color: var(--success); border-color: var(--success); background: rgba(67,233,123,0.1); }
+
+        pre {
+            padding: 20px 22px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em;
+            line-height: 1.65;
+            color: #c9d1d9;
+        }
+
+        .kw { color: #ff7b72; }
+        .fn { color: #d2a8ff; }
+        .str { color: #a5d6ff; }
+        .cm { color: #6e7681; font-style: italic; }
+        .num { color: #79c0ff; }
+
+        /* ── CALLOUTS ── */
+        .callout {
+            display: flex;
+            gap: 16px;
+            padding: 18px 22px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 0.93em;
+        }
+
+        .callout-icon { font-size: 1.3em; flex-shrink: 0; margin-top: 2px; }
+
+        .callout.info {
+            background: rgba(102,126,234,0.1);
+            border: 1px solid rgba(102,126,234,0.25);
+        }
+
+        .callout.warning {
+            background: rgba(250,130,49,0.1);
+            border: 1px solid rgba(250,130,49,0.25);
+        }
+
+        .callout.success {
+            background: rgba(67,233,123,0.1);
+            border: 1px solid rgba(67,233,123,0.25);
+        }
+
+        .callout p { color: var(--text); margin: 0; }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: rgba(102,126,234,0.12);
+            padding: 12px 18px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.82em;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px 18px;
+            border-top: 1px solid var(--card-border);
+            color: #b0b0cc;
+        }
+
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* ── FILE TREE ── */
+        .file-tree {
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em;
+            line-height: 2;
+            margin: 20px 0;
+            color: #c9d1d9;
+        }
+
+        .file-tree .dir { color: var(--primary); }
+        .file-tree .file { color: #8888aa; }
+        .file-tree .highlight { color: var(--success); }
+
+        /* ── STEPS VISUAL ── */
+        .pipeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .pipe-step {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .pipe-step .pipe-icon { font-size: 2em; margin-bottom: 10px; }
+        .pipe-step .pipe-label { font-size: 0.82em; font-weight: 600; color: var(--text); }
+        .pipe-step .pipe-sub { font-size: 0.76em; color: var(--text-muted); margin-top: 4px; }
+
+        .pipe-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: var(--primary);
+            opacity: 0.4;
+        }
+
+        /* ── INLINE CODE ── */
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(102,126,234,0.12);
+            border: 1px solid rgba(102,126,234,0.2);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 0.88em;
+            color: var(--primary);
+        }
+
+        /* ── BACK BUTTON ── */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88em;
+            padding: 10px 18px;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        .back-btn:hover { color: var(--primary); border-color: rgba(102,126,234,0.4); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .main { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .hero { padding: 60px 20px 40px; }
+            nav { padding: 0 20px; }
+            .toc-inner { padding: 0 20px; }
+            .main { padding: 40px 20px; }
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+            margin: 50px 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a href="index.html">🏠 Portfolio</a>
+    <span class="sep">/</span>
+    <a href="#">Tutoriels</a>
+    <span class="sep">/</span>
+    <span class="current">YOLOv8 - Détection d'objets</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+        <div class="badge">
+            <span class="dot"></span>
+            Tutoriel pratique
+        </div>
+        <h1>Détection d'Objets<br>avec <span class="gradient">YOLOv8</span></h1>
+        <p>Entraînez votre propre modèle de vision par ordinateur et déployez-le en temps réel sur webcam — de zéro à l'IA fonctionnelle, étape par étape.</p>
+        <div class="meta-tags">
+            <span class="meta-tag">⏱ ~2h de mise en place</span>
+            <span class="meta-tag">🐍 Python 3.10+</span>
+            <span class="meta-tag">💻 Windows / Linux / Mac</span>
+            <span class="meta-tag">🎯 Débutant → Intermédiaire</span>
+        </div>
+    </div>
+</section>
+
+<!-- TOC BAR -->
+<div class="toc-bar">
+    <div class="toc-inner">
+        <a class="toc-item active" href="#env"><span class="toc-num">1</span>Environnement</a>
+        <a class="toc-item" href="#dataset"><span class="toc-num">2</span>Dataset</a>
+        <a class="toc-item" href="#annotation"><span class="toc-num">3</span>Annotation</a>
+        <a class="toc-item" href="#config"><span class="toc-num">4</span>Configuration</a>
+        <a class="toc-item" href="#train"><span class="toc-num">5</span>Entraînement</a>
+        <a class="toc-item" href="#inference"><span class="toc-num">6</span>Inférence</a>
+        <a class="toc-item" href="#webcam"><span class="toc-num">7</span>Webcam Live</a>
+        <a class="toc-item" href="#tips"><span class="toc-num">8</span>Conseils</a>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+<div class="content">
+
+    <!-- PIPELINE -->
+    <div class="section">
+        <h2 style="font-size:1.1em;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;">Vue d'ensemble du processus</h2>
+        <div class="pipeline">
+            <div class="pipe-step">
+                <div class="pipe-icon">🐍</div>
+                <div class="pipe-label">Environnement</div>
+                <div class="pipe-sub">Python + venv</div>
+            </div>
+            <div class="pipe-step">
+                <div class="pipe-icon">🖼️</div>
+                <div class="pipe-label">Dataset</div>
+                <div class="pipe-sub">Images annotées</div>
+            </div>
+            <div class="pipe-step">
+                <div class="pipe-icon">⚙️</div>
+                <div class="pipe-label">Entraînement</div>
+                <div class="pipe-sub">YOLOv8 + GPU/CPU</div>
+            </div>
+            <div class="pipe-step">
+                <div class="pipe-icon">🎯</div>
+                <div class="pipe-label">Détection</div>
+                <div class="pipe-sub">Webcam en direct</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 1 - ENVIRONNEMENT -->
+    <section class="section" id="env">
+        <div class="section-header">
+            <div class="step-num">1</div>
+            <h2>Installation de l'environnement</h2>
+        </div>
+
+        <p>Commencez par installer Python 3.10 ou supérieur depuis <strong>python.org</strong>. Lors de l'installation, cochez impérativement <strong>"Add Python to PATH"</strong>.</p>
+
+        <p>Créez ensuite un dossier dédié au projet et configurez un environnement virtuel isolé :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">CMD / Terminal</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="cm"># Créer le dossier projet</span>
+mkdir C:\YOLO_DETECTION
+cd C:\YOLO_DETECTION
+
+<span class="cm"># Créer et activer l'environnement virtuel</span>
+python -m venv venv
+venv\Scripts\activate          <span class="cm"># Windows</span>
+<span class="cm"># source venv/bin/activate    # Linux / Mac</span>
+
+<span class="cm"># Installer YOLOv8 et OpenCV</span>
+pip install ultralytics opencv-python</pre>
+        </div>
+
+        <div class="callout success">
+            <span class="callout-icon">✅</span>
+            <p>Si l'installation réussit, tapez <code>yolo</code> dans le terminal — vous devriez voir l'aide de la commande s'afficher.</p>
+        </div>
+
+        <p>Vérifiez si votre machine dispose d'un GPU NVIDIA (accélération CUDA) :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Python</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="kw">import</span> torch
+<span class="fn">print</span>(<span class="str">"GPU disponible :"</span>, torch.cuda.is_available())
+<span class="fn">print</span>(<span class="str">"Appareil :"</span>, torch.cuda.get_device_name(<span class="num">0</span>) <span class="kw">if</span> torch.cuda.is_available() <span class="kw">else</span> <span class="str">"CPU"</span>)</pre>
+        </div>
+
+        <div class="callout info">
+            <span class="callout-icon">ℹ️</span>
+            <p>Sans GPU NVIDIA, YOLOv8 tourne sur CPU. C'est plus lent mais parfaitement fonctionnel pour débuter. Intel Iris Xe fonctionne en mode CPU.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 2 - DATASET -->
+    <section class="section" id="dataset">
+        <div class="section-header">
+            <div class="step-num">2</div>
+            <h2>Collecter et organiser le dataset</h2>
+        </div>
+
+        <p>La qualité du dataset est le facteur n°1 de la performance. Pour un objet unique (ex: bouteille d'eau), visez au moins <strong>500 images variées</strong> : angles différents, arrière-plans, lumières, distances.</p>
+
+        <h3 style="color:var(--text);margin:24px 0 12px;font-size:1.05em;">Sources d'images recommandées</h3>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Source</th><th>Type</th><th>Avantage</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>🤗 <strong>Roboflow Universe</strong></td><td>Datasets prêts à l'emploi</td><td>Souvent déjà annotés avec labels YOLO</td></tr>
+                    <tr><td>📦 <strong>Kaggle Datasets</strong></td><td>Datasets variés</td><td>Large choix, gratuit</td></tr>
+                    <tr><td>🌐 <strong>Open Images (Google)</strong></td><td>Images libres</td><td>Très grande base, annotations dispo</td></tr>
+                    <tr><td>📸 <strong>Vos propres photos</strong></td><td>Images personnalisées</td><td>Meilleure correspondance au cas d'usage</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p>Organisez votre dataset en respectant exactement cette arborescence :</p>
+
+        <div class="file-tree">
+<span class="dir">YOLO_DETECTION/</span>
+├── <span class="dir">dataset/</span>
+│   ├── <span class="dir">images/</span>
+│   │   ├── <span class="dir">train/</span>    <span class="file">← 80% des images</span>
+│   │   └── <span class="dir">val/</span>      <span class="file">← 20% des images</span>
+│   └── <span class="dir">labels/</span>
+│       ├── <span class="dir">train/</span>    <span class="file">← fichiers .txt correspondants</span>
+│       └── <span class="dir">val/</span>
+├── <span class="highlight">dataset.yaml</span>
+├── <span class="highlight">webcam.py</span>
+└── <span class="dir">venv/</span>
+        </div>
+
+        <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <p>Chaque image dans <code>images/train/</code> doit avoir un fichier label correspondant dans <code>labels/train/</code> avec exactement le même nom (ex: <code>bouteille_01.jpg</code> → <code>bouteille_01.txt</code>).</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 3 - ANNOTATION -->
+    <section class="section" id="annotation">
+        <div class="section-header">
+            <div class="step-num">3</div>
+            <h2>Annoter les images</h2>
+        </div>
+
+        <p>L'annotation consiste à dessiner des boîtes englobantes (bounding boxes) autour des objets et à leur affecter une classe. Installez <strong>LabelImg</strong>, l'outil le plus simple pour débuter :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">CMD</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre>pip install labelImg
+labelImg</pre>
+        </div>
+
+        <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <p><strong>Critique :</strong> dans LabelImg, sélectionnez le format <strong>YOLO</strong> et non PascalVOC (XML). Le format YOLO génère des fichiers <code>.txt</code>, PascalVOC génère du <code>.xml</code> qui ne fonctionnera pas.</p>
+        </div>
+
+        <h3 style="color:var(--text);margin:24px 0 12px;font-size:1.05em;">Format d'un fichier label YOLO</h3>
+        <p>Chaque ligne d'un <code>.txt</code> représente un objet dans l'image :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Format YOLO</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="cm"># classe  x_centre  y_centre  largeur  hauteur  (tout normalisé entre 0 et 1)</span>
+0 0.512 0.433 0.221 0.610</pre>
+        </div>
+
+        <p>Toutes les valeurs sont normalisées par rapport à la taille de l'image. YOLO gère cela automatiquement quand vous utilisez LabelImg en mode YOLO.</p>
+
+        <div class="callout info">
+            <span class="callout-icon">💡</span>
+            <p><strong>Alternative rapide :</strong> Roboflow propose un outil d'annotation en ligne gratuit + export direct au format YOLOv8. Idéal pour collaborer à plusieurs.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 4 - CONFIG -->
+    <section class="section" id="config">
+        <div class="section-header">
+            <div class="step-num">4</div>
+            <h2>Fichier de configuration du dataset</h2>
+        </div>
+
+        <p>Créez un fichier <code>dataset.yaml</code> à la racine du projet. Ce fichier indique à YOLO où trouver les données et quelles classes détecter :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">dataset.yaml</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="cm"># Chemin racine du dataset</span>
+path: C:/YOLO_DETECTION/dataset
+
+<span class="cm"># Dossiers relatifs au chemin racine</span>
+train: images/train
+val:   images/val
+
+<span class="cm"># Dictionnaire des classes</span>
+names:
+  <span class="num">0</span>: bottle       <span class="cm"># Classe 0 = bouteille</span>
+  <span class="cm"># 1: can        # Ajoutez d'autres classes ici si besoin</span></pre>
+        </div>
+
+        <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <p>Respectez scrupuleusement la casse : si vos labels utilisent <code>bottle</code>, n'écrivez pas <code>Bottle</code> ou <code>bouteille</code> dans le yaml. Les deux doivent être identiques.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 5 - TRAIN -->
+    <section class="section" id="train">
+        <div class="section-header">
+            <div class="step-num">5</div>
+            <h2>Entraîner le modèle</h2>
+        </div>
+
+        <p>YOLOv8 propose plusieurs tailles de modèle. Commencez par <strong>yolov8n</strong> (nano) : très rapide à entraîner, bon pour valider que tout fonctionne.</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Modèle</th><th>Vitesse</th><th>Précision</th><th>Recommandé pour</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>yolov8n.pt</code></td><td>⚡⚡⚡</td><td>★★☆</td><td>Démarrage rapide, CPU</td></tr>
+                    <tr><td><code>yolov8s.pt</code></td><td>⚡⚡☆</td><td>★★★</td><td>Bon équilibre général</td></tr>
+                    <tr><td><code>yolov8m.pt</code></td><td>⚡☆☆</td><td>★★★★</td><td>GPU disponible</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">CMD — Lancer l'entraînement</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre>yolo detect train \
+  data=dataset.yaml \
+  model=yolov8n.pt \
+  epochs=50 \
+  imgsz=640 \
+  batch=16</pre>
+        </div>
+
+        <p>YOLOv8 télécharge automatiquement le modèle de base si absent. L'entraînement peut durer de quelques minutes à plusieurs heures selon votre matériel.</p>
+
+        <p>Le meilleur modèle est automatiquement sauvegardé dans :</p>
+
+        <div class="file-tree">
+<span class="dir">runs/detect/train/weights/</span>
+├── <span class="highlight">best.pt</span>     <span class="file">← meilleur modèle (à utiliser)</span>
+└── <span class="file">last.pt</span>      <span class="file">← dernier checkpoint</span>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 6 - INFERENCE -->
+    <section class="section" id="inference">
+        <div class="section-header">
+            <div class="step-num">6</div>
+            <h2>Tester le modèle sur une image</h2>
+        </div>
+
+        <p>Avant le déploiement webcam, testez votre modèle sur une image statique :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">CMD</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre>yolo detect predict \
+  model=runs/detect/train/weights/best.pt \
+  source=test.jpg \
+  conf=0.5</pre>
+        </div>
+
+        <p>Le résultat est sauvegardé dans <code>runs/detect/predict/</code>. Vérifiez que les boîtes sont bien placées et que la classe est correcte avant de passer à la webcam.</p>
+
+        <div class="callout info">
+            <span class="callout-icon">💡</span>
+            <p>Le paramètre <code>conf=0.5</code> filtre les détections avec moins de 50% de confiance. Ajustez selon vos besoins : abaissez-le pour détecter plus, augmentez-le pour filtrer les faux positifs.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 7 - WEBCAM -->
+    <section class="section" id="webcam">
+        <div class="section-header">
+            <div class="step-num">7</div>
+            <h2>Détection en temps réel (Webcam)</h2>
+        </div>
+
+        <p>Créez le fichier <code>webcam.py</code> dans le dossier projet :</p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Python — webcam.py</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="kw">from</span> ultralytics <span class="kw">import</span> YOLO
+<span class="kw">import</span> cv2
+
+<span class="cm"># Charger le modèle entraîné</span>
+model = <span class="fn">YOLO</span>(<span class="str">"runs/detect/train/weights/best.pt"</span>)
+
+<span class="cm"># Ouvrir la webcam (0 = webcam par défaut)</span>
+cap = cv2.<span class="fn">VideoCapture</span>(<span class="num">0</span>)
+
+<span class="kw">if not</span> cap.isOpened():
+    <span class="fn">print</span>(<span class="str">"Erreur : webcam non détectée."</span>)
+    <span class="fn">exit</span>()
+
+<span class="fn">print</span>(<span class="str">"Appuyez sur 'Q' pour quitter."</span>)
+
+<span class="kw">while</span> <span class="num">True</span>:
+    ret, frame = cap.<span class="fn">read</span>()
+    <span class="kw">if not</span> ret:
+        <span class="kw">break</span>
+
+    <span class="cm"># Inférence sur l'image courante</span>
+    results = <span class="fn">model</span>(frame, conf=<span class="num">0.5</span>, verbose=<span class="num">False</span>)
+
+    <span class="cm"># Dessiner les boîtes et labels</span>
+    annotated = results[<span class="num">0</span>].<span class="fn">plot</span>()
+
+    cv2.<span class="fn">imshow</span>(<span class="str">"YOLOv8 - Détection en direct"</span>, annotated)
+
+    <span class="cm"># Afficher le nombre d'objets détectés</span>
+    nb = <span class="fn">len</span>(results[<span class="num">0</span>].boxes)
+    <span class="fn">print</span>(<span class="str">f"\rObjets détectés : {nb}"</span>, end=<span class="str">""</span>)
+
+    <span class="kw">if</span> cv2.<span class="fn">waitKey</span>(<span class="num">1</span>) & <span class="num">0xFF</span> == <span class="fn">ord</span>(<span class="str">'q'</span>):
+        <span class="kw">break</span>
+
+cap.<span class="fn">release</span>()
+cv2.<span class="fn">destroyAllWindows</span>()</pre>
+        </div>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">CMD — Lancer</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre>python webcam.py</pre>
+        </div>
+
+        <div class="callout success">
+            <span class="callout-icon">🎉</span>
+            <p>Une fenêtre s'ouvre avec le flux de votre webcam. Les objets détectés sont encadrés avec leur classe et leur score de confiance en temps réel.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 8 - CONSEILS -->
+    <section class="section" id="tips">
+        <div class="section-header">
+            <div class="step-num">8</div>
+            <h2>Améliorer les performances</h2>
+        </div>
+
+        <h3 style="color:var(--text);margin:0 0 12px;font-size:1.05em;">📊 Nombre d'images recommandé</h3>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Objectif</th><th>Images minimum</th><th>Remarque</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Test / Prototype</td><td>100</td><td>Pour valider le pipeline</td></tr>
+                    <tr><td>Résultat correct</td><td>500</td><td>Bon point de départ</td></tr>
+                    <tr><td>Production</td><td>2 000+</td><td>Avec augmentation de données</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 style="color:var(--text);margin:24px 0 12px;font-size:1.05em;">🔧 Leviers d'amélioration</h3>
+
+        <ul>
+            <li>Varier les conditions : angles, distances, éclairages, arrière-plans</li>
+            <li>Inclure des cas difficiles : objet partiellement caché, flou, contre-jour</li>
+            <li>Augmenter les epochs : passez à <code>epochs=100</code> si les métriques progressent encore</li>
+            <li>Utiliser l'augmentation de données (intégrée dans YOLOv8 par défaut)</li>
+            <li>Passer à un modèle plus grand (<code>yolov8s</code>, <code>yolov8m</code>) si GPU disponible</li>
+        </ul>
+
+        <h3 style="color:var(--text);margin:24px 0 12px;font-size:1.05em;">❌ Erreurs fréquentes à éviter</h3>
+
+        <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <p><strong>Format annotation :</strong> toujours exporter en YOLO (<code>.txt</code>), jamais PascalVOC (<code>.xml</code>).</p>
+        </div>
+        <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <p><strong>Casse des classes :</strong> utilisez un nom unique et cohérent. <code>bottle</code>, <code>Bottle</code> et <code>bouteille</code> sont trois classes différentes pour YOLO.</p>
+        </div>
+        <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <p><strong>Dataset déséquilibré :</strong> ne mettez pas 1 000 images sans objet pour 10 images avec objet. Gardez un ratio train/val de 80/20.</p>
+        </div>
+
+        <h3 style="color:var(--text);margin:24px 0 12px;font-size:1.05em;">🚀 Prochaines étapes</h3>
+        <ul>
+            <li>Détecter plusieurs classes simultanément (bouteilles, boîtes, outils…)</li>
+            <li>Compter les objets et déclencher des alertes</li>
+            <li>Déployer sur Raspberry Pi 5 avec YOLOv8n</li>
+            <li>Créer une API Flask pour exposer la détection sur le réseau</li>
+            <li>Ajouter le suivi d'objet (Object Tracking) entre les frames</li>
+            <li>Envoyer des notifications MQTT pour intégration IoT</li>
+        </ul>
+    </section>
+
+    <a href="index.html" class="back-btn">← Retour au portfolio</a>
+
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-card">
+        <h3>Difficulté</h3>
+        <p style="font-size:0.88em;color:var(--text-muted);margin-bottom:12px;">Débutant → Intermédiaire</p>
+        <div class="difficulty">
+            <div class="diff-bar filled"></div>
+            <div class="diff-bar filled"></div>
+            <div class="diff-bar filled"></div>
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+        </div>
+    </div>
+
+    <div class="sidebar-card">
+        <h3>Prérequis</h3>
+        <div class="sidebar-links">
+            <span class="sidebar-link">🐍 Python basique</span>
+            <span class="sidebar-link">💻 Terminal / CMD</span>
+            <span class="sidebar-link">🧠 ML concepts (optionnel)</span>
+        </div>
+    </div>
+
+    <div class="sidebar-card">
+        <h3>Ressources</h3>
+        <div class="sidebar-links">
+            <a class="sidebar-link" href="https://docs.ultralytics.com" target="_blank">📖 Docs Ultralytics</a>
+            <a class="sidebar-link" href="https://roboflow.com" target="_blank">🤗 Roboflow</a>
+            <a class="sidebar-link" href="https://kaggle.com/datasets" target="_blank">📦 Kaggle Datasets</a>
+            <a class="sidebar-link" href="https://storage.googleapis.com/openimages/web/index.html" target="_blank">🌐 Open Images</a>
+        </div>
+    </div>
+
+    <div class="sidebar-card">
+        <h3>Commandes clés</h3>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.78em;color:#8888aa;line-height:2.2;">
+            <div style="color:var(--primary);">pip install ultralytics</div>
+            <div>yolo detect train ...</div>
+            <div>yolo detect predict ...</div>
+            <div style="color:var(--success);">python webcam.py</div>
+        </div>
+    </div>
+</aside>
+
+</div>
+
+<script>
+    function copyCode(btn) {
+        const code = btn.closest('.code-block').querySelector('pre').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copié !';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = 'Copier';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // TOC active state on scroll
+    const sections = document.querySelectorAll('.section[id]');
+    const tocItems = document.querySelectorAll('.toc-item');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                tocItems.forEach(i => i.classList.remove('active'));
+                const active = document.querySelector(`.toc-item[href="#${entry.target.id}"]`);
+                if (active) {
+                    active.classList.add('active');
+                    active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }
+        });
+    }, { threshold: 0.4, rootMargin: '-60px 0px -40% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
