@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoriel Arduino — Études & Réalisation S2 | ASF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0f0d;
+            --bg2: #0f1a14;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
+            --primary: #00e676;
+            --primary-dim: rgba(0,230,118,0.15);
+            --primary-border: rgba(0,230,118,0.3);
+            --accent: #00bcd4;
+            --accent2: #ffb300;
+            --text: #e8f0eb;
+            --muted: #7a9985;
+            --code-bg: #060d08;
+            --danger: #ff5252;
+            --warning: #ffb300;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.75;
+            overflow-x: hidden;
+        }
+
+        /* ── NOISE OVERLAY ── */
+        body::before {
+            content:'';
+            position:fixed;
+            inset:0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events:none;
+            z-index:0;
+            opacity:0.4;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position:fixed; top:0; left:0; right:0; z-index:200;
+            background:rgba(10,15,13,0.88);
+            backdrop-filter:blur(20px);
+            border-bottom:1px solid var(--border);
+            padding:0 48px;
+            display:flex; align-items:center; justify-content:space-between;
+            height:64px;
+        }
+        .nav-logo {
+            font-family:'Unbounded',sans-serif;
+            font-weight:900; font-size:0.9em;
+            color:var(--primary);
+            text-decoration:none;
+            letter-spacing:-0.02em;
+        }
+        .nav-bc { display:flex; align-items:center; gap:10px; font-size:0.83em; }
+        .nav-bc a { color:var(--muted); text-decoration:none; transition:color 0.2s; }
+        .nav-bc a:hover { color:var(--primary); }
+        .nav-bc span { color:var(--border); }
+        .nav-bc .cur { color:var(--text); font-weight:500; }
+
+        /* ── HERO ── */
+        .hero {
+            padding:120px 48px 60px;
+            position:relative; overflow:hidden;
+            min-height:480px; display:flex; align-items:center;
+        }
+        .hero-mesh {
+            position:absolute; inset:0;
+            background:
+                radial-gradient(ellipse 60% 80% at 10% 50%, rgba(0,230,118,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 50% at 80% 20%, rgba(0,188,212,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse 30% 40% at 90% 80%, rgba(255,179,0,0.06) 0%, transparent 50%);
+        }
+        .hero-circuit {
+            position:absolute; right:0; top:50%; transform:translateY(-50%);
+            width:420px; height:420px; opacity:0.06;
+        }
+        .hero-content { position:relative; z-index:1; max-width:1200px; margin:0 auto; width:100%; }
+        .hero-eyebrow {
+            display:inline-flex; align-items:center; gap:10px;
+            font-family:'IBM Plex Mono',monospace;
+            font-size:0.72em; color:var(--primary);
+            letter-spacing:0.12em; text-transform:uppercase;
+            margin-bottom:28px;
+        }
+        .hero-eyebrow::before { content:''; display:block; width:32px; height:2px; background:var(--primary); border-radius:1px; }
+        .hero h1 {
+            font-family:'Unbounded',sans-serif;
+            font-size:clamp(2.2em,5vw,4em);
+            font-weight:900;
+            line-height:1.05;
+            letter-spacing:-0.03em;
+            margin-bottom:22px;
+        }
+        .hero h1 .line1 { display:block; color:var(--text); }
+        .hero h1 .line2 {
+            display:block;
+            background:linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .hero-desc { color:var(--muted); font-size:1.05em; max-width:560px; margin-bottom:36px; }
+        .hero-chips { display:flex; flex-wrap:wrap; gap:10px; }
+        .chip {
+            background:var(--card); border:1px solid var(--border);
+            padding:7px 16px; border-radius:6px;
+            font-family:'IBM Plex Mono',monospace; font-size:0.78em; color:var(--muted);
+            display:flex; align-items:center; gap:7px;
+        }
+
+        /* ── TOC ── */
+        .toc-wrap {
+            background:rgba(0,0,0,0.3);
+            border-bottom:1px solid var(--border);
+            overflow-x:auto; scrollbar-width:none;
+        }
+        .toc-wrap::-webkit-scrollbar { display:none; }
+        .toc-inner {
+            display:flex; max-width:1200px; margin:0 auto;
+            padding:0 48px; white-space:nowrap;
+        }
+        .toc-a {
+            display:inline-flex; align-items:center; gap:9px;
+            padding:13px 18px; font-size:0.82em;
+            color:var(--muted); text-decoration:none;
+            border-bottom:2px solid transparent;
+            transition:all 0.2s;
+        }
+        .toc-a:hover { color:var(--primary); border-bottom-color:var(--primary); }
+        .toc-a.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
+        .toc-n {
+            width:20px; height:20px; border-radius:4px;
+            background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.2);
+            color:var(--primary); font-size:0.72em; font-weight:700;
+            display:flex; align-items:center; justify-content:center;
+            font-family:'IBM Plex Mono',monospace;
+        }
+
+        /* ── LAYOUT ── */
+        .layout {
+            max-width:1200px; margin:0 auto;
+            padding:60px 48px;
+            display:grid; grid-template-columns:1fr 260px; gap:60px;
+            align-items:start; position:relative; z-index:1;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar { position:sticky; top:80px; }
+        .sb-card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:14px; padding:22px; margin-bottom:18px;
+        }
+        .sb-title {
+            font-family:'IBM Plex Mono',monospace;
+            font-size:0.72em; font-weight:500;
+            letter-spacing:0.1em; text-transform:uppercase;
+            color:var(--muted); margin-bottom:14px;
+        }
+        .sb-links { display:flex; flex-direction:column; gap:7px; }
+        .sb-link {
+            display:flex; align-items:center; gap:9px;
+            padding:9px 12px; border-radius:8px;
+            background:rgba(255,255,255,0.02); border:1px solid transparent;
+            color:var(--muted); text-decoration:none; font-size:0.86em;
+            transition:all 0.2s;
+        }
+        .sb-link:hover { color:var(--primary); border-color:var(--primary-border); background:var(--primary-dim); }
+        .sb-fn {
+            font-family:'IBM Plex Mono',monospace;
+            font-size:0.78em; color:var(--primary);
+            line-height:2.1; padding:2px 0;
+        }
+
+        /* ── SECTIONS ── */
+        .sec { margin-bottom:70px; scroll-margin-top:84px; }
+        .sec-hd { display:flex; align-items:center; gap:16px; margin-bottom:30px; }
+        .sec-num {
+            width:46px; height:46px; border-radius:10px; flex-shrink:0;
+            background:linear-gradient(135deg, var(--primary), var(--accent));
+            display:flex; align-items:center; justify-content:center;
+            font-family:'Unbounded',sans-serif; font-size:1em; font-weight:900; color:#000;
+        }
+        .sec h2 { font-family:'Unbounded',sans-serif; font-size:1.35em; font-weight:700; letter-spacing:-0.02em; }
+        .sec p { color:#a8c4b0; font-size:0.95em; margin-bottom:12px; }
+        .sec ul { list-style:none; padding:0; }
+        .sec ul li { color:#a8c4b0; font-size:0.93em; padding:5px 0 5px 18px; position:relative; }
+        .sec ul li::before { content:'▸'; position:absolute; left:0; color:var(--primary); font-size:0.85em; top:6px; }
+
+        /* ── SUBSECTIONS ── */
+        .sub-title {
+            font-family:'IBM Plex Mono',monospace;
+            font-size:0.8em; font-weight:500;
+            color:var(--primary); letter-spacing:0.06em; text-transform:uppercase;
+            margin:28px 0 12px;
+            display:flex; align-items:center; gap:10px;
+        }
+        .sub-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        /* ── CODE BLOCKS ── */
+        .cb { background:var(--code-bg); border:1px solid var(--border); border-radius:12px; margin:16px 0; overflow:hidden; }
+        .cb-head {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 18px;
+            background:rgba(0,230,118,0.04); border-bottom:1px solid var(--border);
+        }
+        .cb-lang {
+            font-family:'IBM Plex Mono',monospace; font-size:0.72em; font-weight:500;
+            letter-spacing:0.08em; text-transform:uppercase; color:var(--primary);
+        }
+        .cb-copy {
+            background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.2);
+            color:var(--primary); padding:4px 12px; border-radius:5px;
+            font-size:0.72em; cursor:pointer; font-family:'DM Sans',sans-serif;
+            transition:all 0.2s;
+        }
+        .cb-copy:hover { background:rgba(0,230,118,0.2); }
+        .cb-copy.ok { color:#00e676; border-color:#00e676; background:rgba(0,230,118,0.15); }
+        pre {
+            padding:20px 22px; overflow-x:auto;
+            font-family:'IBM Plex Mono',monospace; font-size:0.84em;
+            line-height:1.7; color:#b0d8b8;
+        }
+        .kw { color:#80cbc4; }
+        .fn { color:#c5e1a5; }
+        .str { color:#ffcc80; }
+        .cm { color:#4a6650; font-style:italic; }
+        .num { color:#81d4fa; }
+        .pp { color:#ce93d8; } /* preprocessor */
+
+        /* ── CALLOUTS ── */
+        .callout {
+            display:flex; gap:14px; padding:16px 20px;
+            border-radius:10px; margin:16px 0; font-size:0.91em;
+        }
+        .callout-ico { font-size:1.2em; flex-shrink:0; margin-top:1px; }
+        .callout p { color:var(--text); margin:0; }
+        .callout.info { background:rgba(0,188,212,0.08); border:1px solid rgba(0,188,212,0.25); }
+        .callout.warn { background:rgba(255,179,0,0.08); border:1px solid rgba(255,179,0,0.25); }
+        .callout.ok { background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.25); }
+        .callout.danger { background:rgba(255,82,82,0.08); border:1px solid rgba(255,82,82,0.25); }
+
+        /* ── TABLES ── */
+        .tw { overflow-x:auto; border-radius:10px; border:1px solid var(--border); margin:16px 0; }
+        table { width:100%; border-collapse:collapse; font-size:0.88em; }
+        th {
+            background:rgba(0,230,118,0.07); padding:11px 16px;
+            text-align:left; font-weight:600; color:var(--primary);
+            font-family:'IBM Plex Mono',monospace; font-size:0.78em;
+            letter-spacing:0.05em; text-transform:uppercase;
+        }
+        td { padding:11px 16px; border-top:1px solid var(--border); color:#a8c4b0; }
+        tr:hover td { background:rgba(0,230,118,0.03); }
+
+        /* ── DIVIDER ── */
+        .div { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); margin:50px 0; }
+
+        /* ── COMPONENT CARDS ── */
+        .comp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:18px 0; }
+        .comp-card {
+            background:var(--card); border:1px solid var(--border); border-radius:12px;
+            padding:20px 18px; transition:all 0.25s;
+        }
+        .comp-card:hover { border-color:var(--primary-border); background:var(--primary-dim); }
+        .comp-icon { font-size:2em; margin-bottom:12px; }
+        .comp-card h4 { font-family:'IBM Plex Mono',monospace; font-size:0.88em; color:var(--primary); margin-bottom:6px; font-weight:500; }
+        .comp-card p { font-size:0.84em; color:var(--muted); margin:0; line-height:1.5; }
+
+        /* ── PIN BADGE ── */
+        .pin {
+            display:inline-flex; align-items:center; gap:5px;
+            background:rgba(0,188,212,0.12); border:1px solid rgba(0,188,212,0.3);
+            color:var(--accent); padding:2px 10px; border-radius:5px;
+            font-family:'IBM Plex Mono',monospace; font-size:0.78em; font-weight:500;
+        }
+        .pin-gnd { background:rgba(255,82,82,0.1); border-color:rgba(255,82,82,0.25); color:var(--danger); }
+        .pin-vcc { background:rgba(255,179,0,0.1); border-color:rgba(255,179,0,0.25); color:var(--warning); }
+        .pin-out { background:rgba(0,230,118,0.1); border-color:rgba(0,230,118,0.25); color:var(--primary); }
+
+        /* ── SEGMENT DISPLAY SVG ── */
+        .seg-wrap { display:flex; gap:20px; flex-wrap:wrap; margin:16px 0; align-items:flex-start; }
+
+        /* ── TP CARDS ── */
+        .tp-card {
+            background:linear-gradient(135deg,rgba(0,230,118,0.06) 0%,rgba(0,188,212,0.04) 100%);
+            border:1px solid rgba(0,230,118,0.2);
+            border-left:4px solid var(--primary);
+            border-radius:12px; padding:24px 26px; margin:18px 0;
+        }
+        .tp-card h3 { font-family:'Unbounded',sans-serif; font-size:1em; font-weight:700; color:var(--primary); margin-bottom:12px; }
+        .tp-card p, .tp-card li { color:#a8c4b0; font-size:0.9em; }
+        .tp-card ul { padding-left:0; }
+        .tp-card ul li { padding:4px 0 4px 18px; }
+
+        /* ── BACK BTN ── */
+        .back-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            color:var(--muted); text-decoration:none; font-size:0.86em;
+            padding:9px 18px; border:1px solid var(--border); border-radius:9px;
+            transition:all 0.2s; margin-top:20px;
+        }
+        .back-btn:hover { color:var(--primary); border-color:var(--primary-border); }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:900px) {
+            nav { padding:0 20px; }
+            .hero { padding:90px 20px 40px; }
+            .toc-inner { padding:0 20px; }
+            .layout { grid-template-columns:1fr; padding:40px 20px; }
+            .sidebar { display:none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a href="index.html" class="nav-logo">ASF</a>
+    <div class="nav-bc">
+        <a href="index.html">Portfolio</a>
+        <span>/</span>
+        <a href="index.html#tutoriels">Tutoriels</a>
+        <span>/</span>
+        <span class="cur">Arduino — Études & Réalisation S2</span>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-mesh"></div>
+    <!-- Circuit SVG décoratif -->
+    <svg class="hero-circuit" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="80" y="80" width="240" height="240" rx="8" stroke="#00e676" stroke-width="1.5"/>
+        <circle cx="200" cy="200" r="60" stroke="#00bcd4" stroke-width="1"/>
+        <line x1="80" y1="140" x2="20" y2="140" stroke="#00e676" stroke-width="1.5"/>
+        <line x1="80" y1="200" x2="20" y2="200" stroke="#00e676" stroke-width="1.5"/>
+        <line x1="80" y1="260" x2="20" y2="260" stroke="#00e676" stroke-width="1.5"/>
+        <line x1="320" y1="140" x2="380" y2="140" stroke="#00bcd4" stroke-width="1.5"/>
+        <line x1="320" y1="200" x2="380" y2="200" stroke="#00bcd4" stroke-width="1.5"/>
+        <line x1="320" y1="260" x2="380" y2="260" stroke="#00bcd4" stroke-width="1.5"/>
+        <line x1="140" y1="80" x2="140" y2="20" stroke="#ffb300" stroke-width="1.5"/>
+        <line x1="200" y1="80" x2="200" y2="20" stroke="#ffb300" stroke-width="1.5"/>
+        <line x1="260" y1="80" x2="260" y2="20" stroke="#ffb300" stroke-width="1.5"/>
+        <circle cx="20" cy="140" r="5" fill="#00e676"/>
+        <circle cx="20" cy="200" r="5" fill="#00e676"/>
+        <circle cx="20" cy="260" r="5" fill="#00e676"/>
+        <circle cx="380" cy="140" r="5" fill="#00bcd4"/>
+        <circle cx="380" cy="200" r="5" fill="#00bcd4"/>
+        <circle cx="380" cy="260" r="5" fill="#00bcd4"/>
+        <rect x="185" y="185" width="30" height="30" rx="3" stroke="#00e676" stroke-width="1.5"/>
+        <text x="194" y="204" font-family="monospace" font-size="11" fill="#00e676">μC</text>
+    </svg>
+    <div class="hero-content">
+        <div class="hero-eyebrow">Cours complet · S2</div>
+        <h1>
+            <span class="line1">Études &amp; Réalisation</span>
+            <span class="line2">Arduino</span>
+        </h1>
+        <p class="hero-desc">Du microcontrôleur aux capteurs avancés — tous les concepts, montages et programmes du cours, organisés et enrichis pour une prise en main complète.</p>
+        <div class="hero-chips">
+            <span class="chip">⚡ Électronique embarquée</span>
+            <span class="chip">🔌 Arduino Uno</span>
+            <span class="chip">💡 LED · Capteurs · Actionneurs</span>
+            <span class="chip">📡 RFID · LCD · Servo</span>
+        </div>
+    </div>
+</section>
+
+<!-- TOC -->
+<div class="toc-wrap">
+    <div class="toc-inner">
+        <a class="toc-a active" href="#microcontroleur"><span class="toc-n">1</span>Microcontrôleur</a>
+        <a class="toc-a" href="#arduino"><span class="toc-n">2</span>Arduino</a>
+        <a class="toc-a" href="#composants"><span class="toc-n">3</span>Composants</a>
+        <a class="toc-a" href="#ide"><span class="toc-n">4</span>IDE</a>
+        <a class="toc-a" href="#programmation"><span class="toc-n">5</span>Programmation</a>
+        <a class="toc-a" href="#led"><span class="toc-n">6</span>LED &amp; Bouton</a>
+        <a class="toc-a" href="#sept-seg"><span class="toc-n">7</span>Afficheur 7-seg</a>
+        <a class="toc-a" href="#analogique"><span class="toc-n">8</span>Analogique</a>
+        <a class="toc-a" href="#capteurs"><span class="toc-n">9</span>Capteurs</a>
+        <a class="toc-a" href="#lcd"><span class="toc-n">10</span>LCD</a>
+        <a class="toc-a" href="#ultrason"><span class="toc-n">11</span>Ultrason</a>
+        <a class="toc-a" href="#servo"><span class="toc-n">12</span>Servo</a>
+        <a class="toc-a" href="#clavier"><span class="toc-n">13</span>Clavier</a>
+        <a class="toc-a" href="#rfid"><span class="toc-n">14</span>RFID</a>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+<div class="content">
+
+<!-- ── 1. MICROCONTRÔLEUR ── -->
+<section class="sec" id="microcontroleur">
+    <div class="sec-hd"><div class="sec-num">1</div><h2>Le Microcontrôleur</h2></div>
+    <p>Un microcontrôleur est un circuit intégré (IC) qui rassemble sur une seule puce une unité de calcul, de la mémoire et des interfaces d'entrées/sorties. Compact et performant, il est au cœur de nombreux systèmes embarqués.</p>
+
+    <div class="comp-grid">
+        <div class="comp-card">
+            <div class="comp-icon">🌡️</div>
+            <h4>Surveillance</h4>
+            <p>Acquisition de capteurs : température, humidité, pression atmosphérique, luminosité…</p>
+        </div>
+        <div class="comp-card">
+            <div class="comp-icon">🏠</div>
+            <h4>Domotique</h4>
+            <p>Contrôle des appareils électriques, volets, éclairage, chauffage à distance.</p>
+        </div>
+        <div class="comp-card">
+            <div class="comp-icon">🤖</div>
+            <h4>Robotique</h4>
+            <p>Commande de robots industriels, servomoteurs, bras articulés, véhicules autonomes.</p>
+        </div>
+    </div>
+
+    <div class="sub-title">Composants internes d'un microcontrôleur</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Composant</th><th>Rôle</th></tr></thead>
+            <tbody>
+                <tr><td><strong>CPU</strong></td><td>Unité de calcul — exécute les instructions du programme</td></tr>
+                <tr><td><strong>Flash (ROM)</strong></td><td>Mémoire programme non volatile — conserve le sketch</td></tr>
+                <tr><td><strong>SRAM</strong></td><td>Mémoire vive — variables et pile d'exécution</td></tr>
+                <tr><td><strong>EEPROM</strong></td><td>Mémoire persistante — données conservées après reset</td></tr>
+                <tr><td><strong>Entrées/Sorties</strong></td><td>Broches numériques et analogiques pour interagir avec l'extérieur</td></tr>
+                <tr><td><strong>Timers / PWM</strong></td><td>Génération de signaux temporisés et modulés en largeur</td></tr>
+                <tr><td><strong>ADC</strong></td><td>Convertisseur analogique/numérique (0–5V → 0–1023)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 2. ARDUINO ── -->
+<section class="sec" id="arduino">
+    <div class="sec-hd"><div class="sec-num">2</div><h2>La carte Arduino</h2></div>
+    <p>Arduino est une carte électronique programmable open-source intégrant un microcontrôleur ATmega et un environnement de développement accessible. Elle existe en de nombreuses versions qui diffèrent par leur taille, puissance et nombre de broches.</p>
+
+    <div class="sub-title">Arduino Uno — Référence des broches</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Broche(s)</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><span class="pin">0 → 13</span></td><td>Numériques E/S</td><td>HIGH (5V) ou LOW (0V) — <code>pinMode</code>, <code>digitalRead</code>, <code>digitalWrite</code></td></tr>
+                <tr><td><span class="pin">A0 → A5</span></td><td>Analogiques entrée</td><td>Valeur 0–1023 via <code>analogRead()</code></td></tr>
+                <tr><td><span class="pin">3,5,6,9,10,11</span></td><td>PWM (~)</td><td>Sortie analogique simulée via <code>analogWrite(0–255)</code></td></tr>
+                <tr><td><span class="pin pin-gnd">GND</span></td><td>Masse</td><td>Référence 0V pour tous les circuits</td></tr>
+                <tr><td><span class="pin pin-vcc">5V</span></td><td>Alimentation</td><td>Tension stabilisée pour alimenter les composants</td></tr>
+                <tr><td><span class="pin pin-vcc">3.3V</span></td><td>Alimentation</td><td>Pour les composants basse tension (ESP, modules SPI…)</td></tr>
+                <tr><td><span class="pin">Vin</span></td><td>Entrée alimentation</td><td>Tension externe non stabilisée (7–12V recommandé)</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="callout info">
+        <span class="callout-ico">ℹ️</span>
+        <p>Les broches numériques 0 et 1 (RX/TX) sont utilisées par la communication série. Évitez de les utiliser en E/S pendant le débogage via le moniteur série.</p>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 3. COMPOSANTS ── -->
+<section class="sec" id="composants">
+    <div class="sec-hd"><div class="sec-num">3</div><h2>Composants essentiels</h2></div>
+
+    <div class="sub-title">La platine d'expérimentation (Breadboard)</div>
+    <p>Permet de réaliser des montages sans soudure. Chaque rangée de 5 trous est connectée en interne. Les rails rouge (+) et bleu (–) sont continus sur toute la longueur.</p>
+
+    <div class="callout warn">
+        <span class="callout-ico">⚠️</span>
+        <p>Les deux moitiés de la breadboard sont séparées par un canal central. Ne pas connecter des composants à cheval sur ce canal sans un pont externe.</p>
+    </div>
+
+    <div class="sub-title">Les LED (Diodes électroluminescentes)</div>
+    <p>Une LED laisse passer le courant dans un seul sens : de l'<strong>anode</strong> (broche longue) vers la <strong>cathode</strong> (broche courte / méplat).</p>
+
+    <div class="callout danger">
+        <span class="callout-ico">🔴</span>
+        <p><strong>Résistance obligatoire !</strong> Le courant de l'Arduino (40mA max/broche) est trop élevé pour une LED directe. Calculez la résistance : <strong>R = (Vcc − Vled) / Iled</strong> → typiquement 220Ω à 330Ω pour une LED rouge sur 5V.</p>
+    </div>
+
+    <div class="sub-title">Les Résistances</div>
+    <p>Une résistance limite la circulation du courant (mesurée en ohms Ω). Le code couleur sur le composant indique sa valeur. Les valeurs courantes en TP : 220Ω, 330Ω, 1kΩ, 10kΩ.</p>
+
+    <div class="sub-title">La connectique</div>
+    <ul>
+        <li><strong>Jumpers M-M</strong> (mâle-mâle) : entre deux points de la breadboard</li>
+        <li><strong>Jumpers M-F</strong> (mâle-femelle) : entre Arduino et breadboard</li>
+        <li>Les connexions entre Arduino et composants passent toujours par une <strong>masse commune (GND)</strong></li>
+    </ul>
+
+    <div class="sub-title">Le circuit électrique de base</div>
+    <p>Une pile fournit une différence de potentiel : les électrons circulent du pôle − vers le pôle +. Si une LED est placée dans ce circuit avec sa résistance de protection, le passage des électrons génère de la lumière.</p>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 4. IDE ── -->
+<section class="sec" id="ide">
+    <div class="sec-hd"><div class="sec-num">4</div><h2>L'IDE Arduino</h2></div>
+    <p>L'environnement de développement intégré (IDE) Arduino permet d'écrire, compiler et téléverser des programmes (<em>sketches</em>) directement sur la carte via USB.</p>
+
+    <div class="sub-title">Installation — étapes</div>
+    <ul>
+        <li>Télécharger l'IDE depuis <strong>arduino.cc/en/software</strong></li>
+        <li>Lancer l'installateur — cocher <em>"Add Python to PATH"</em> si demandé</li>
+        <li>Choisir le dossier d'installation et laisser progresser</li>
+        <li>Autoriser l'installation des <strong>pilotes USB</strong> (requis pour détecter la carte)</li>
+        <li>Cliquer <em>Fermer</em> une fois l'installation terminée</li>
+    </ul>
+
+    <div class="sub-title">Configuration de la carte</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Menu IDE</span></div>
+        <pre>Outils → Type de carte → Arduino Uno
+Outils → Port → COM3 (ou /dev/ttyUSB0 sur Linux/Mac)</pre>
+    </div>
+
+    <div class="sub-title">Outils de simulation</div>
+    <div class="comp-grid">
+        <div class="comp-card">
+            <div class="comp-icon">🌐</div>
+            <h4>Tinkercad Circuits</h4>
+            <p>Interface glisser-déposer en ligne, simulation complète avec code Arduino. Idéal pour tester avant montage réel.</p>
+        </div>
+        <div class="comp-card">
+            <div class="comp-icon">⚙️</div>
+            <h4>Proteus</h4>
+            <p>Logiciel professionnel de conception et simulation de circuits électroniques complets avec microcontrôleurs.</p>
+        </div>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 5. PROGRAMMATION ── -->
+<section class="sec" id="programmation">
+    <div class="sec-hd"><div class="sec-num">5</div><h2>Programmation Arduino</h2></div>
+    <p>Un sketch Arduino est structuré en trois blocs distincts. Cette structure est <strong>obligatoire</strong> — le compilateur la requiert.</p>
+
+    <div class="comp-grid">
+        <div class="comp-card">
+            <div class="comp-icon">📦</div>
+            <h4>Bloc 1 — Déclarations</h4>
+            <p>Variables globales, inclusion de bibliothèques (<code>#include</code>), définition des constantes et objets partagés entre les fonctions.</p>
+        </div>
+        <div class="comp-card">
+            <div class="comp-icon">⚡</div>
+            <h4>setup()</h4>
+            <p>Exécuté <strong>une seule fois</strong> au démarrage. Configure les broches (<code>pinMode</code>), initialise les objets et la communication série.</p>
+        </div>
+        <div class="comp-card">
+            <div class="comp-icon">🔄</div>
+            <h4>loop()</h4>
+            <p>Boucle <strong>infinie</strong> — le cœur du programme. Lit les capteurs, traite les données, commande les actionneurs, indéfiniment.</p>
+        </div>
+    </div>
+
+    <div class="sub-title">Fonctions essentielles</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Fonction</th><th>Paramètre(s)</th><th>Rôle</th></tr></thead>
+            <tbody>
+                <tr><td><code>pinMode(pin, mode)</code></td><td>pin, INPUT/OUTPUT</td><td>Configure une broche en entrée ou sortie</td></tr>
+                <tr><td><code>digitalWrite(pin, val)</code></td><td>pin, HIGH/LOW</td><td>Écrit une valeur numérique sur une broche de sortie</td></tr>
+                <tr><td><code>digitalRead(pin)</code></td><td>pin</td><td>Lit l'état HIGH ou LOW d'une broche d'entrée</td></tr>
+                <tr><td><code>analogRead(pin)</code></td><td>A0–A5</td><td>Lit une tension analogique → valeur 0–1023</td></tr>
+                <tr><td><code>analogWrite(pin, val)</code></td><td>pin ~, 0–255</td><td>Génère un signal PWM (simulation analogique)</td></tr>
+                <tr><td><code>delay(ms)</code></td><td>millisecondes</td><td>Pause le programme (bloquant)</td></tr>
+                <tr><td><code>Serial.begin(baud)</code></td><td>9600, 115200…</td><td>Initialise la communication série</td></tr>
+                <tr><td><code>Serial.print(val)</code></td><td>tout type</td><td>Envoie une valeur vers le moniteur série</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Structure complète d'un sketch</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="cm">// ── Bloc 1 : Déclarations ──────────────────────────────</span>
+<span class="kw">int</span> brocheLED = <span class="num">13</span>;  <span class="cm">// LED intégrée sur la broche 13</span>
+<span class="kw">int</span> compteur = <span class="num">0</span>;
+
+<span class="cm">// ── Bloc 2 : setup() ──────────────────────────────────</span>
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(brocheLED, OUTPUT);  <span class="cm">// broche 13 en sortie</span>
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);           <span class="cm">// moniteur série à 9600 baud</span>
+}
+
+<span class="cm">// ── Bloc 3 : loop() ───────────────────────────────────</span>
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">digitalWrite</span>(brocheLED, HIGH);  <span class="cm">// LED allumée</span>
+  <span class="fn">delay</span>(<span class="num">1000</span>);                     <span class="cm">// attendre 1 seconde</span>
+  <span class="fn">digitalWrite</span>(brocheLED, LOW);   <span class="cm">// LED éteinte</span>
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+  compteur++;
+  Serial.<span class="fn">println</span>(compteur);       <span class="cm">// afficher dans le moniteur</span>
+}</pre>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 6. LED & BOUTON ── -->
+<section class="sec" id="led">
+    <div class="sec-hd"><div class="sec-num">6</div><h2>LED &amp; Bouton poussoir</h2></div>
+
+    <div class="sub-title">Exemple 1 — Clignotement (Blink)</div>
+    <p>La LED intégrée de la broche 13 clignote toutes les secondes. C'est le programme "Hello World" de l'Arduino.</p>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="num">13</span>, OUTPUT);
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">digitalWrite</span>(<span class="num">13</span>, HIGH);  <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="fn">digitalWrite</span>(<span class="num">13</span>, LOW);   <span class="fn">delay</span>(<span class="num">1000</span>);
+}</pre>
+    </div>
+
+    <div class="sub-title">Exemple 2 — LED commandée par bouton</div>
+    <p>Montage : bouton sur broche 8, LED sur broche 13 avec résistance 220Ω. La LED s'allume uniquement quand le bouton est appuyé.</p>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="kw">int</span> brocheLED = <span class="num">13</span>;
+<span class="kw">int</span> bouton = <span class="num">8</span>;
+<span class="kw">int</span> etatbouton = <span class="num">0</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(brocheLED, OUTPUT);
+  <span class="fn">pinMode</span>(bouton, INPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  etatbouton = <span class="fn">digitalRead</span>(bouton);
+  <span class="kw">if</span> (etatbouton == HIGH) {
+    <span class="fn">digitalWrite</span>(brocheLED, HIGH);  <span class="cm">// bouton appuyé → LED ON</span>
+  } <span class="kw">else</span> {
+    <span class="fn">digitalWrite</span>(brocheLED, LOW);   <span class="cm">// relâché → LED OFF</span>
+  }
+}</pre>
+    </div>
+
+    <div class="tp-card">
+        <h3>🛠 TP1 — Feu tricolore</h3>
+        <p>Réaliser un feu tricolore avec 3 LED qui tournent en boucle :</p>
+        <ul>
+            <li>LED <strong>verte</strong> (broche 4) → allumée <strong>3 secondes</strong></li>
+            <li>LED <strong>orange</strong> (broche 3) → allumée <strong>1 seconde</strong></li>
+            <li>LED <strong>rouge</strong> (broche 2) → allumée <strong>3 secondes</strong></li>
+            <li>Séquence répétée indéfiniment tant que l'Arduino est alimenté</li>
+        </ul>
+    </div>
+
+    <div class="tp-card">
+        <h3>🛠 TP2 — Feu tricolore + Feu piéton</h3>
+        <p>Feu tricolore (broches 10=vert, 11=orange, 12=rouge) + feu piéton bicolore (broche 9=rouge, 8=vert) avec bouton (broche 2) :</p>
+        <ul>
+            <li>Fonctionnement normal identique au TP1</li>
+            <li>Feu piéton constamment rouge tant que le bouton n'est pas appuyé</li>
+            <li>Si bouton appuyé pendant le vert voiture → orange 1s puis rouge voiture 5s + vert piéton 5s</li>
+            <li>Après 5s : feu piéton repasse rouge, cycle normal reprend</li>
+        </ul>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 7. AFFICHEUR 7 SEGMENTS ── -->
+<section class="sec" id="sept-seg">
+    <div class="sec-hd"><div class="sec-num">7</div><h2>Afficheur 7 segments</h2></div>
+    <p>Un afficheur 7 segments est composé de 7 LEDs plates (segments A–G) + un point décimal, disposées pour former des chiffres et lettres. Deux types existent selon le câblage interne des cathodes/anodes.</p>
+
+    <div class="sub-title">Types d'afficheurs</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Type</th><th>Broche commune</th><th>Allumage d'un segment</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Cathode commune (CC)</strong></td><td>GND (masse)</td><td>Mettre la broche de signal à <span class="pin pin-vcc">HIGH (5V)</span></td></tr>
+                <tr><td><strong>Anode commune (AC)</strong></td><td>+5V (alimentation)</td><td>Mettre la broche de signal à <span class="pin pin-gnd">LOW (0V)</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Segments pour afficher les chiffres (cathode commune)</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Chiffre</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th></tr></thead>
+            <tbody>
+                <tr><td>0</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>–</td></tr>
+                <tr><td>1</td><td>–</td><td>●</td><td>●</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+                <tr><td>2</td><td>●</td><td>●</td><td>–</td><td>●</td><td>●</td><td>–</td><td>●</td></tr>
+                <tr><td>3</td><td>●</td><td>●</td><td>●</td><td>●</td><td>–</td><td>–</td><td>●</td></tr>
+                <tr><td>4</td><td>–</td><td>●</td><td>●</td><td>–</td><td>–</td><td>●</td><td>●</td></tr>
+                <tr><td>5</td><td>●</td><td>–</td><td>●</td><td>●</td><td>–</td><td>●</td><td>●</td></tr>
+                <tr><td>8</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+                <tr><td>9</td><td>●</td><td>●</td><td>●</td><td>●</td><td>–</td><td>●</td><td>●</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p style="color:var(--muted);font-size:0.83em;">● = segment allumé &nbsp;&nbsp; – = segment éteint</p>
+
+    <div class="sub-title">Câblage recommandé (TP3)</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Brochage — Arduino Uno</span></div>
+        <pre>Segment A → broche 6      Segment B → broche 5
+Segment C → broche 2      Segment D → broche 3
+Segment E → broche 4      Segment F → broche 7
+Segment G → broche 8      Toutes résistances : 220Ω</pre>
+    </div>
+
+    <div class="sub-title">Code exemple — Afficher "0" puis "9" en boucle</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="kw">int</span> a=<span class="num">6</span>, b=<span class="num">5</span>, c=<span class="num">2</span>, d=<span class="num">3</span>, e=<span class="num">4</span>, f=<span class="num">7</span>, g=<span class="num">8</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="kw">int</span> broches[] = {a,b,c,d,e,f,g};
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>; i&lt;<span class="num">7</span>; i++) <span class="fn">pinMode</span>(broches[i], OUTPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cm">// Afficher "0"</span>
+  <span class="fn">digitalWrite</span>(a,HIGH); <span class="fn">digitalWrite</span>(b,HIGH); <span class="fn">digitalWrite</span>(c,HIGH);
+  <span class="fn">digitalWrite</span>(d,HIGH); <span class="fn">digitalWrite</span>(e,HIGH); <span class="fn">digitalWrite</span>(f,HIGH);
+  <span class="fn">digitalWrite</span>(g,LOW);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+
+  <span class="cm">// Afficher "9"</span>
+  <span class="fn">digitalWrite</span>(a,HIGH); <span class="fn">digitalWrite</span>(b,HIGH); <span class="fn">digitalWrite</span>(c,HIGH);
+  <span class="fn">digitalWrite</span>(d,HIGH); <span class="fn">digitalWrite</span>(e,LOW);  <span class="fn">digitalWrite</span>(f,HIGH);
+  <span class="fn">digitalWrite</span>(g,HIGH);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+}</pre>
+    </div>
+
+    <div class="tp-card">
+        <h3>🛠 TP3 — Compteur / Décompteur</h3>
+        <p>Réaliser un compteur de 0 à 9 puis un décompteur de 9 à 0 avec délai de 500ms entre chaque chiffre. Bonus : afficher les lettres A, b, c, d, E, F.</p>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 8. ANALOGIQUE ── -->
+<section class="sec" id="analogique">
+    <div class="sec-hd"><div class="sec-num">8</div><h2>Entrées analogiques</h2></div>
+    <p>Un signal analogique varie continûment dans le temps (température, lumière, son…). L'Arduino convertit ces valeurs en entiers via son <strong>CAN 10 bits</strong> : 0V → 0, 5V → 1023.</p>
+
+    <div class="callout danger">
+        <span class="callout-ico">⚠️</span>
+        <p>Ne jamais dépasser <strong>5V</strong> sur les broches analogiques sous peine de destruction définitive du microcontrôleur.</p>
+    </div>
+
+    <div class="sub-title">La photorésistance (LDR)</div>
+    <p>La résistance diminue quand la lumière augmente. Montée en diviseur de tension avec une résistance fixe (10kΩ), la tension mesurée sur A0 varie avec la luminosité.</p>
+
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++ — TP4 : LED pilotée par lumière</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="kw">const int</span> BrochePhoto = A0;
+<span class="kw">const int</span> BrocheLed  = <span class="num">13</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(BrocheLed, OUTPUT);
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> lumiere = <span class="fn">analogRead</span>(BrochePhoto);
+  Serial.<span class="fn">println</span>(lumiere);           <span class="cm">// déboguer dans le moniteur série</span>
+  <span class="kw">int</span> seuil = <span class="num">500</span>;                    <span class="cm">// ajuster selon l'ambiance</span>
+  <span class="kw">if</span> (lumiere &gt; seuil) {
+    <span class="fn">digitalWrite</span>(BrocheLed, LOW);    <span class="cm">// trop lumineux → LED off</span>
+  } <span class="kw">else</span> {
+    <span class="fn">digitalWrite</span>(BrocheLed, HIGH);   <span class="cm">// sombre → LED on</span>
+  }
+}</pre>
+    </div>
+
+    <div class="sub-title">Le potentiomètre</div>
+    <p>Résistance variable rotative ou linéaire. Connecté entre 5V et GND avec le curseur sur A0, il génère une tension de 0 à 5V → valeur 0–1023. Utilisé pour contrôler la luminosité d'une LED via <code>analogWrite()</code>.</p>
+
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++ — Variation de luminosité</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="kw">int</span> BrocheLed = <span class="num">9</span>;  <span class="cm">// broche PWM (~)</span>
+<span class="kw">int</span> BrocheAna = <span class="num">0</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(BrocheLed, OUTPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> val = <span class="fn">analogRead</span>(BrocheAna);       <span class="cm">// 0–1023</span>
+  <span class="fn">analogWrite</span>(BrocheLed, val / <span class="num">4</span>);      <span class="cm">// 0–255 pour PWM</span>
+}</pre>
+    </div>
+
+    <div class="callout info">
+        <span class="callout-ico">💡</span>
+        <p><code>analogRead()</code> retourne 0–1023 (10 bits). <code>analogWrite()</code> attend 0–255 (8 bits). D'où la division par 4 pour convertir l'une en l'autre.</p>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 9. CAPTEUR DHT11 ── -->
+<section class="sec" id="capteurs">
+    <div class="sec-hd"><div class="sec-num">9</div><h2>Capteur DHT11 — Température &amp; Humidité</h2></div>
+    <p>Le DHT11 mesure la température (0–50°C ±2°C) et l'humidité relative (20–90% ±5%) sur un seul fil DATA. La conversion est effectuée sur 16 bits toutes les 2 secondes.</p>
+
+    <div class="sub-title">Brochage DHT11</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Broche</th><th>Nom</th><th>Connexion</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>VCC</td><td><span class="pin pin-vcc">3.3V ou 5V</span></td></tr>
+                <tr><td>2</td><td>DATA</td><td>Broche numérique Arduino (ex: <span class="pin">12</span>) + résistance pull-up 10kΩ vers VCC</td></tr>
+                <tr><td>3</td><td>NC</td><td>Non connecté</td></tr>
+                <tr><td>4</td><td>GND</td><td><span class="pin pin-gnd">GND</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Installation de la bibliothèque</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">IDE Arduino</span></div>
+        <pre>Outils → Gérer les bibliothèques → Rechercher "DHT sensor library" → Installer</pre>
+    </div>
+
+    <div class="sub-title">Code complet — Lecture toutes les 2 secondes</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include "DHT.h"</span>
+<span class="pp">#define BrocheDHT 12</span>
+<span class="pp">#define DHTTYPE   DHT11</span>
+DHT <span class="fn">dht</span>(BrocheDHT, DHTTYPE);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);
+  Serial.<span class="fn">println</span>(<span class="str">"Test capteur DHT11"</span>);
+  dht.<span class="fn">begin</span>();
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+  <span class="kw">float</span> humidite    = dht.<span class="fn">readHumidity</span>();
+  <span class="kw">float</span> temperature = dht.<span class="fn">readTemperature</span>();
+
+  <span class="kw">if</span> (<span class="fn">isnan</span>(humidite) || <span class="fn">isnan</span>(temperature)) {
+    Serial.<span class="fn">println</span>(<span class="str">"Erreur lecture DHT !"</span>);
+    <span class="kw">return</span>;
+  }
+  Serial.<span class="fn">print</span>(<span class="str">"Humidité : "</span>);    Serial.<span class="fn">print</span>(humidite, <span class="num">1</span>);    Serial.<span class="fn">println</span>(<span class="str">" %"</span>);
+  Serial.<span class="fn">print</span>(<span class="str">"Température : "</span>); Serial.<span class="fn">print</span>(temperature, <span class="num">1</span>); Serial.<span class="fn">println</span>(<span class="str">" °C"</span>);
+}</pre>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 10. LCD ── -->
+<section class="sec" id="lcd">
+    <div class="sec-hd"><div class="sec-num">10</div><h2>Écran LCD 16×2</h2></div>
+    <p>L'écran LCD (Liquid Crystal Display) affiche 2 lignes de 16 caractères. Très utilisé dans les systèmes embarqués pour afficher des mesures ou messages sans ordinateur.</p>
+
+    <div class="sub-title">Broches principales</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>N°</th><th>Nom</th><th>Rôle</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>VSS</td><td><span class="pin pin-gnd">GND</span></td></tr>
+                <tr><td>2</td><td>VDD</td><td><span class="pin pin-vcc">+5V</span></td></tr>
+                <tr><td>3</td><td>V0</td><td>Contraste — connecter au curseur d'un potentiomètre 10kΩ</td></tr>
+                <tr><td>4</td><td>RS</td><td>Sélection commande (0) ou données (1)</td></tr>
+                <tr><td>5</td><td>R/W</td><td>Lecture (1) ou Écriture (0) → mettre à GND pour écriture seule</td></tr>
+                <tr><td>6</td><td>E (Enable)</td><td>Signal de validation de lecture des données</td></tr>
+                <tr><td>7–14</td><td>D0–D7</td><td>Données (mode 4 bits : seulement D4–D7 utilisés)</td></tr>
+                <tr><td>15</td><td>A</td><td>Anode rétroéclairage <span class="pin pin-vcc">+5V</span></td></tr>
+                <tr><td>16</td><td>K</td><td>Cathode rétroéclairage <span class="pin pin-gnd">GND</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Code — Afficher un message sur 2 lignes</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include "LiquidCrystal.h"</span>
+
+<span class="cm">// LiquidCrystal(RS, E, D4, D5, D6, D7)</span>
+LiquidCrystal <span class="fn">lcd</span>(<span class="num">12</span>, <span class="num">11</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">3</span>, <span class="num">2</span>);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  lcd.<span class="fn">begin</span>(<span class="num">16</span>, <span class="num">2</span>);           <span class="cm">// 16 colonnes, 2 lignes</span>
+  lcd.<span class="fn">print</span>(<span class="str">"Bonjour !"</span>);      <span class="cm">// ligne 0, col 0 par défaut</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  lcd.<span class="fn">setCursor</span>(<span class="num">0</span>, <span class="num">1</span>);       <span class="cm">// col 0, ligne 1</span>
+  lcd.<span class="fn">print</span>(<span class="str">"Arduino !"</span>);
+}</pre>
+    </div>
+
+    <div class="callout info">
+        <span class="callout-ico">💡</span>
+        <p>La bibliothèque <code>LiquidCrystal</code> est incluse par défaut dans l'IDE Arduino. Pas d'installation supplémentaire nécessaire.</p>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 11. ULTRASON ── -->
+<section class="sec" id="ultrason">
+    <div class="sec-hd"><div class="sec-num">11</div><h2>Capteur ultrason HC-SR04</h2></div>
+    <p>Le HC-SR04 mesure des distances entre <strong>2 cm et 4 m</strong> avec une précision de 3mm, via des ondes ultrasoniques (40 kHz, inaudibles). Tension d'alimentation : 5V.</p>
+
+    <div class="sub-title">Principe de fonctionnement</div>
+    <ul>
+        <li>Envoyer une impulsion HIGH de <strong>10µs</strong> sur la broche TRIGGER</li>
+        <li>Le capteur émet <strong>8 impulsions ultrasoniques</strong> à 40kHz</li>
+        <li>Les ondes se propagent, touchent un obstacle et reviennent</li>
+        <li>La broche ECHO reste HIGH pendant la durée aller-retour</li>
+        <li><strong>Distance = (durée × vitesse_son) / 2</strong> — vitesse son ≈ 340 m/s</li>
+    </ul>
+
+    <div class="sub-title">Brochage HC-SR04</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Broche capteur</th><th>Connexion Arduino</th></tr></thead>
+            <tbody>
+                <tr><td>VCC</td><td><span class="pin pin-vcc">5V</span></td></tr>
+                <tr><td>GND</td><td><span class="pin pin-gnd">GND</span></td></tr>
+                <tr><td>TRIG</td><td><span class="pin pin-out">Broche 5 (OUTPUT)</span></td></tr>
+                <tr><td>ECHO</td><td><span class="pin">Broche 6 (INPUT)</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Code avec bibliothèque (simple)</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include &lt;HCSR04.h&gt;</span>
+HCSR04 <span class="fn">hc</span>(<span class="num">5</span>, <span class="num">6</span>);  <span class="cm">// TRIG=5, ECHO=6</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() { Serial.<span class="fn">begin</span>(<span class="num">9600</span>); }
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  Serial.<span class="fn">print</span>(<span class="str">"Distance : "</span>);
+  Serial.<span class="fn">print</span>(hc.<span class="fn">dist</span>());
+  Serial.<span class="fn">println</span>(<span class="str">" cm"</span>);
+  <span class="fn">delay</span>(<span class="num">200</span>);
+}</pre>
+    </div>
+
+    <div class="sub-title">Code sans bibliothèque (calcul manuel)</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="kw">const byte</span> TRIG = <span class="num">5</span>, ECHO = <span class="num">6</span>;
+<span class="kw">const float</span> V_SON = <span class="num">340.0</span> / <span class="num">1000</span>; <span class="cm">// mm/µs</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);
+  <span class="fn">pinMode</span>(TRIG, OUTPUT); <span class="fn">digitalWrite</span>(TRIG, LOW);
+  <span class="fn">pinMode</span>(ECHO, INPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cm">// Impulsion TRIGGER 10µs</span>
+  <span class="fn">digitalWrite</span>(TRIG, HIGH);
+  <span class="fn">delayMicroseconds</span>(<span class="num">10</span>);
+  <span class="fn">digitalWrite</span>(TRIG, LOW);
+
+  <span class="cm">// Mesure durée écho</span>
+  <span class="kw">long</span> duree = <span class="fn">pulseIn</span>(ECHO, HIGH, <span class="num">25000UL</span>);
+  <span class="kw">float</span> dist_mm = duree / <span class="num">2.0</span> * V_SON;
+
+  Serial.<span class="fn">print</span>(<span class="str">"Distance: "</span>);
+  Serial.<span class="fn">print</span>(dist_mm / <span class="num">10.0</span>, <span class="num">1</span>);
+  Serial.<span class="fn">println</span>(<span class="str">" cm"</span>);
+  <span class="fn">delay</span>(<span class="num">500</span>);
+}</pre>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 12. SERVO ── -->
+<section class="sec" id="servo">
+    <div class="sec-hd"><div class="sec-num">12</div><h2>Servomoteur</h2></div>
+    <p>Un servomoteur positionne son axe à un angle précis (0°–180°) et le maintient. Très utilisé en robotique, modélisme, domotique. Il est contrôlé par un signal PWM à période de 20ms.</p>
+
+    <div class="sub-title">Relation largeur d'impulsion → angle</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Durée impulsion</th><th>Position</th></tr></thead>
+            <tbody>
+                <tr><td>1 ms</td><td>0°</td></tr>
+                <tr><td>1.5 ms</td><td>90° (centre)</td></tr>
+                <tr><td>2 ms</td><td>180°</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Code — Balayage automatique 0° → 180° → 0°</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include &lt;Servo.h&gt;</span>
+Servo monServo;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  monServo.<span class="fn">attach</span>(<span class="num">9</span>);  <span class="cm">// broche PWM signal</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">for</span> (<span class="kw">int</span> pos = <span class="num">0</span>; pos &lt;= <span class="num">180</span>; pos++) {
+    monServo.<span class="fn">write</span>(pos);
+    <span class="fn">delay</span>(<span class="num">15</span>);
+  }
+  <span class="kw">for</span> (<span class="kw">int</span> pos = <span class="num">180</span>; pos &gt;= <span class="num">0</span>; pos--) {
+    monServo.<span class="fn">write</span>(pos);
+    <span class="fn">delay</span>(<span class="num">15</span>);
+  }
+}</pre>
+    </div>
+
+    <div class="sub-title">Code — Contrôle par potentiomètre</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include &lt;Servo.h&gt;</span>
+Servo monServo;
+<span class="kw">int</span> pinServo = <span class="num">9</span>;
+<span class="kw">int</span> pinPot   = A0;
+
+<span class="kw">void</span> <span class="fn">setup</span>() { monServo.<span class="fn">attach</span>(pinServo); }
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> valPot = <span class="fn">analogRead</span>(pinPot);          <span class="cm">// 0–1023</span>
+  <span class="kw">int</span> angle  = <span class="fn">map</span>(valPot, <span class="num">0</span>, <span class="num">1023</span>, <span class="num">0</span>, <span class="num">180</span>); <span class="cm">// conversion</span>
+  monServo.<span class="fn">write</span>(angle);
+}</pre>
+    </div>
+
+    <div class="callout info">
+        <span class="callout-ico">💡</span>
+        <p>La fonction <code>map(val, 0, 1023, 0, 180)</code> convertit linéairement une valeur d'une plage vers une autre. Très utile pour adapter des lectures analogiques à des plages d'angles ou de vitesses.</p>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 13. CLAVIER ── -->
+<section class="sec" id="clavier">
+    <div class="sec-hd"><div class="sec-num">13</div><h2>Clavier numérique (Keypad)</h2></div>
+    <p>Un clavier matriciel (3×4 ou 4×4) fonctionne par balayage de lignes et colonnes. Chaque touche relie une ligne à une colonne. Bibliothèque <code>Keypad</code> requise.</p>
+
+    <div class="sub-title">Brochage clavier 4×4 → Arduino</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>Ligne</th><th>Broche</th><th>Colonne</th><th>Broche</th></tr></thead>
+            <tbody>
+                <tr><td>R1</td><td><span class="pin">3</span></td><td>C1</td><td><span class="pin">7</span></td></tr>
+                <tr><td>R2</td><td><span class="pin">2</span></td><td>C2</td><td><span class="pin">6</span></td></tr>
+                <tr><td>R3</td><td><span class="pin">1</span></td><td>C3</td><td><span class="pin">5</span></td></tr>
+                <tr><td>R4</td><td><span class="pin">0</span></td><td>C4</td><td><span class="pin">4</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include &lt;Keypad.h&gt;</span>
+
+<span class="kw">const byte</span> ROWS = <span class="num">4</span>, COLS = <span class="num">4</span>;
+<span class="kw">char</span> keys[ROWS][COLS] = {
+  {<span class="str">'1'</span>,<span class="str">'2'</span>,<span class="str">'3'</span>,<span class="str">'A'</span>},
+  {<span class="str">'4'</span>,<span class="str">'5'</span>,<span class="str">'6'</span>,<span class="str">'B'</span>},
+  {<span class="str">'7'</span>,<span class="str">'8'</span>,<span class="str">'9'</span>,<span class="str">'C'</span>},
+  {<span class="str">'*'</span>,<span class="str">'0'</span>,<span class="str">'#'</span>,<span class="str">'D'</span>}
+};
+<span class="kw">byte</span> rowPins[ROWS] = {<span class="num">3</span>,<span class="num">2</span>,<span class="num">1</span>,<span class="num">0</span>};
+<span class="kw">byte</span> colPins[COLS] = {<span class="num">7</span>,<span class="num">6</span>,<span class="num">5</span>,<span class="num">4</span>};
+Keypad clavier = <span class="fn">Keypad</span>(<span class="fn">makeKeymap</span>(keys), rowPins, colPins, ROWS, COLS);
+
+<span class="kw">void</span> <span class="fn">setup</span>() { Serial.<span class="fn">begin</span>(<span class="num">9600</span>); }
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">char</span> touche = clavier.<span class="fn">getKey</span>();
+  <span class="kw">if</span> (touche) {
+    Serial.<span class="fn">print</span>(<span class="str">"Touche : "</span>);
+    Serial.<span class="fn">println</span>(touche);
+  }
+}</pre>
+    </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ── 14. RFID ── -->
+<section class="sec" id="rfid">
+    <div class="sec-hd"><div class="sec-num">14</div><h2>RFID RC522</h2></div>
+    <p>La technologie RFID (Radio Frequency IDentification) permet d'identifier sans contact un badge ou tag via des ondes radio. Le module RC522 émet des ondes électromagnétiques et lit l'UID unique de chaque tag (96 bits, standard EPC).</p>
+
+    <div class="sub-title">Applications</div>
+    <ul>
+        <li>Contrôle d'accès par badge</li>
+        <li>Suivi de marchandises en logistique</li>
+        <li>Bibliothèques, parking, pointage</li>
+    </ul>
+
+    <div class="sub-title">Brochage RC522 → Arduino Uno (SPI)</div>
+    <div class="tw">
+        <table>
+            <thead><tr><th>RC522</th><th>Arduino</th></tr></thead>
+            <tbody>
+                <tr><td>SDA (SS)</td><td><span class="pin">10</span></td></tr>
+                <tr><td>SCK</td><td><span class="pin">13</span></td></tr>
+                <tr><td>MOSI</td><td><span class="pin">11</span></td></tr>
+                <tr><td>MISO</td><td><span class="pin">12</span></td></tr>
+                <tr><td>RST</td><td><span class="pin">9</span></td></tr>
+                <tr><td>GND</td><td><span class="pin pin-gnd">GND</span></td></tr>
+                <tr><td>3.3V</td><td><span class="pin pin-vcc">3.3V</span> ← Ne pas mettre 5V !</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sub-title">Code — Lire l'UID d'un badge</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include "SPI.h"</span>
+<span class="pp">#include "MFRC522.h"</span>
+<span class="pp">#define RST_PIN 9</span>
+<span class="pp">#define SS_PIN  10</span>
+MFRC522 <span class="fn">mfrc522</span>(SS_PIN, RST_PIN);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);
+  SPI.<span class="fn">begin</span>();
+  mfrc522.<span class="fn">PCD_Init</span>();
+  Serial.<span class="fn">println</span>(<span class="str">"Approcher un badge..."</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">if</span> (!mfrc522.<span class="fn">PICC_IsNewCardPresent</span>()) <span class="kw">return</span>;
+  <span class="kw">if</span> (!mfrc522.<span class="fn">PICC_ReadCardSerial</span>())  <span class="kw">return</span>;
+  mfrc522.<span class="fn">PICC_DumpToSerial</span>(&amp;(mfrc522.uid));
+}</pre>
+    </div>
+
+    <div class="sub-title">Code — Contrôle d'accès par badge autorisé</div>
+    <div class="cb">
+        <div class="cb-head"><span class="cb-lang">Arduino C++</span><button class="cb-copy" onclick="copyCode(this)">Copier</button></div>
+        <pre><span class="pp">#include "SPI.h"</span>
+<span class="pp">#include "MFRC522.h"</span>
+<span class="pp">#define RST_PIN 9</span>
+<span class="pp">#define SS_PIN  10</span>
+
+<span class="kw">byte</span> readCard[<span class="num">4</span>];
+String cardID = <span class="str">"20C3935E"</span>;  <span class="cm">// remplacer par votre UID</span>
+String tagID  = <span class="str">""</span>;
+MFRC522 <span class="fn">mfrc522</span>(SS_PIN, RST_PIN);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);
+  SPI.<span class="fn">begin</span>(); mfrc522.<span class="fn">PCD_Init</span>();
+  <span class="fn">pinMode</span>(<span class="num">5</span>, OUTPUT);  <span class="cm">// LED rouge (accès refusé)</span>
+  <span class="fn">pinMode</span>(<span class="num">6</span>, OUTPUT);  <span class="cm">// LED verte (accès autorisé)</span>
+}
+
+<span class="kw">boolean</span> <span class="fn">getID</span>() {
+  <span class="kw">if</span> (!mfrc522.<span class="fn">PICC_IsNewCardPresent</span>()) <span class="kw">return false</span>;
+  <span class="kw">if</span> (!mfrc522.<span class="fn">PICC_ReadCardSerial</span>())  <span class="kw">return false</span>;
+  tagID = <span class="str">""</span>;
+  <span class="kw">for</span> (<span class="kw">uint8_t</span> i=<span class="num">0</span>; i&lt;<span class="num">4</span>; i++) tagID.concat(String(mfrc522.uid.uidByte[i], HEX));
+  tagID.<span class="fn">toUpperCase</span>();
+  mfrc522.<span class="fn">PICC_HaltA</span>();
+  <span class="kw">return true</span>;
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">while</span> (<span class="fn">getID</span>()) {
+    <span class="kw">if</span> (tagID == cardID) {
+      Serial.<span class="fn">println</span>(<span class="str">"Accès autorisé !"</span>);
+      <span class="fn">digitalWrite</span>(<span class="num">6</span>, HIGH);  <span class="cm">// LED verte ON</span>
+    } <span class="kw">else</span> {
+      Serial.<span class="fn">println</span>(<span class="str">"Accès refusé !"</span>);
+      <span class="fn">digitalWrite</span>(<span class="num">5</span>, HIGH);  <span class="cm">// LED rouge ON</span>
+    }
+    Serial.<span class="fn">print</span>(<span class="str">"UID: "</span>); Serial.<span class="fn">println</span>(tagID);
+    <span class="fn">delay</span>(<span class="num">2000</span>);
+    <span class="fn">digitalWrite</span>(<span class="num">5</span>, LOW); <span class="fn">digitalWrite</span>(<span class="num">6</span>, LOW);
+  }
+}</pre>
+    </div>
+
+    <div class="callout warn">
+        <span class="callout-ico">⚠️</span>
+        <p>Le module RC522 fonctionne en <strong>3.3V</strong>. Le connecter à 5V le détruirait. Vérifiez soigneusement l'alimentation avant de brancher.</p>
+    </div>
+
+    <div class="callout ok">
+        <span class="callout-ico">✅</span>
+        <p>Pour récupérer votre UID, téléversez d'abord le code de lecture basique, ouvrez le moniteur série, approchez votre badge et notez l'UID affiché. Remplacez ensuite la valeur de <code>cardID</code> dans le code de contrôle d'accès.</p>
+    </div>
+</section>
+
+<a href="index.html" class="back-btn">← Retour au portfolio</a>
+
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sb-card">
+        <div class="sb-title">Cours</div>
+        <div class="sb-links">
+            <span class="sb-link">📚 Études & Réalisation S2</span>
+            <span class="sb-link">🎓 Niveau Licence</span>
+            <span class="sb-link">⚡ Électronique embarquée</span>
+        </div>
+    </div>
+
+    <div class="sb-card">
+        <div class="sb-title">Matériel nécessaire</div>
+        <div class="sb-links">
+            <span class="sb-link">🔌 Arduino Uno</span>
+            <span class="sb-link">🔧 Breadboard + Jumpers</span>
+            <span class="sb-link">💡 LEDs + Résistances</span>
+            <span class="sb-link">🌡️ DHT11</span>
+            <span class="sb-link">📟 LCD 16×2</span>
+            <span class="sb-link">📡 HC-SR04</span>
+            <span class="sb-link">⚙️ Servomoteur SG90</span>
+            <span class="sb-link">🔑 Module RFID RC522</span>
+        </div>
+    </div>
+
+    <div class="sb-card">
+        <div class="sb-title">Bibliothèques</div>
+        <div class="sb-fn">
+            #include &lt;Servo.h&gt;<br>
+            #include &lt;DHT.h&gt;<br>
+            #include &lt;LiquidCrystal.h&gt;<br>
+            #include &lt;HCSR04.h&gt;<br>
+            #include &lt;Keypad.h&gt;<br>
+            #include &lt;MFRC522.h&gt;<br>
+            #include &lt;SPI.h&gt;
+        </div>
+    </div>
+
+    <div class="sb-card">
+        <div class="sb-title">Simulation</div>
+        <div class="sb-links">
+            <a class="sb-link" href="https://www.tinkercad.com" target="_blank">🌐 Tinkercad Circuits</a>
+            <a class="sb-link" href="https://www.labcenter.com" target="_blank">⚙️ Proteus</a>
+            <a class="sb-link" href="https://www.arduino.cc/en/software" target="_blank">💾 IDE Arduino</a>
+        </div>
+    </div>
+
+    <div class="sb-card">
+        <div class="sb-title">Travaux pratiques</div>
+        <div class="sb-links">
+            <span class="sb-link">🚦 TP1 — Feu tricolore</span>
+            <span class="sb-link">🚶 TP2 — Feu piéton</span>
+            <span class="sb-link">🔢 TP3 — Afficheur 7-seg</span>
+            <span class="sb-link">☀️ TP4 — Photorésistance</span>
+        </div>
+    </div>
+</aside>
+
+</div>
+
+<script>
+    // ── COPY ──
+    function copyCode(btn) {
+        const code = btn.closest('.cb').querySelector('pre').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copié !';
+            btn.classList.add('ok');
+            setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('ok'); }, 2000);
+        });
+    }
+
+    // ── TOC smooth scroll ──
+    document.querySelectorAll('.toc-a').forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            const target = document.querySelector(a.getAttribute('href'));
+            if (!target) return;
+            const navH = document.querySelector('nav').offsetHeight;
+            const tocH = document.querySelector('.toc-wrap').offsetHeight;
+            window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - navH - tocH - 12, behavior: 'smooth' });
+        });
+    });
+
+    // ── TOC active on scroll ──
+    const sections = document.querySelectorAll('.sec[id]');
+    const tocLinks  = document.querySelectorAll('.toc-a');
+
+    function updateToc() {
+        const navH = document.querySelector('nav').offsetHeight;
+        const tocH = document.querySelector('.toc-wrap').offsetHeight;
+        const offset = navH + tocH + 30;
+        let current = null;
+        sections.forEach(s => { if (s.getBoundingClientRect().top <= offset) current = s.id; });
+        tocLinks.forEach(a => {
+            const active = a.getAttribute('href') === '#' + current;
+            a.classList.toggle('active', active);
+            if (active) {
+                const bar = document.querySelector('.toc-wrap');
+                bar.scrollTo({ left: a.offsetLeft - bar.offsetWidth / 2 + a.offsetWidth / 2, behavior: 'smooth' });
+            }
+        });
+    }
+    window.addEventListener('scroll', updateToc, { passive: true });
+    updateToc();
+</script>
+</body>
+</html>
