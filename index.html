@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ababacar Sadikh FAYE - Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">ASF</a>
+        <div class="nav-links">
+            <a href="#about" class="nav-link active">À propos</a>
+            <a href="#expertise" class="nav-link">Expertise</a>
+            <a href="#tutoriels" class="nav-link">Tutoriels</a>
+            <a href="tutorial-arduino.html" class="nav-link">Arduino</a>
+            <a href="tutorial-yolo.html" class="nav-link">YOLOv8</a>
+            <button class="theme-toggle" type="button" data-theme-toggle>🌙</button>
+            <a href="#contact" class="nav-link nav-cta">Contact</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero" id="about">
+            <div class="hero-inner">
+                <div>
+                    <div class="eyebrow">ATER · UPPA · Pau, France</div>
+                    <h1>Ababacar Sadikh <span class="gradient-text">FAYE</span></h1>
+                    <p class="lead">Attaché Temporaire d'Enseignement et de Recherche à l'Université de Pau et des Pays de l'Adour. Passionné par l'électronique, les systèmes embarqués et l'IoT, je conçois des solutions technologiques et les transmets aux ingénieurs de demain.</p>
+                    <div class="btn-row">
+                        <a href="#expertise" class="btn btn-primary">Voir mon expertise</a>
+                        <a href="#tutoriels" class="btn">Explorer les tutoriels</a>
+                    </div>
+                </div>
+                <div class="avatar" aria-hidden="true">
+                    <div class="avatar-inner">ASF</div>
+                    <div class="badge">Disponible</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="stats-bar">
+            <div class="stats-inner">
+                <div class="stat"><div class="stat-num">ATER</div><div class="stat-label">Statut actuel</div></div>
+                <div class="stat"><div class="stat-num">UPPA</div><div class="stat-label">Université de Pau</div></div>
+                <div class="stat"><div class="stat-num">IoT</div><div class="stat-label">Spécialité principale</div></div>
+                <div class="stat"><div class="stat-num">R&D</div><div class="stat-label">Recherche & Développement</div></div>
+            </div>
+        </div>
+
+        <section class="section" id="expertise">
+            <div class="section-tag">Domaines</div>
+            <h2 class="section-title">Domaines d'expertise</h2>
+            <p class="section-subtitle">Une approche pluridisciplinaire qui unit l'enseignement, la recherche et l'innovation technologique.</p>
+            <div class="grid-2">
+                <article class="card">
+                    <div class="icon">🎓</div>
+                    <h3>Enseignement supérieur</h3>
+                    <p>Formation en électronique et informatique auprès d'étudiants en cursus ingénieur, licence et master.</p>
+                </article>
+                <article class="card">
+                    <div class="icon">⚙️</div>
+                    <h3>Systèmes automatisés</h3>
+                    <p>Développement de solutions d'automatisation, de la conception du montage au déploiement.</p>
+                </article>
+                <article class="card">
+                    <div class="icon">🌐</div>
+                    <h3>Objets connectés</h3>
+                    <p>Conception de dispositifs IoT : capteurs, microcontrôleurs, protocoles sans fil et cloud.</p>
+                </article>
+                <article class="card">
+                    <div class="icon">💡</div>
+                    <h3>Innovation technologique</h3>
+                    <p>Veille, prototypage et expérimentation autour de la vision par ordinateur et du Machine Learning embarqué.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-tag">Compétences</div>
+            <h2 class="section-title">Compétences techniques</h2>
+            <p class="section-subtitle">Des outils et technologies maîtrisés pour concevoir, prototyper et déployer.</p>
+            <div class="skills-grid">
+                <div class="skill">Électronique analogique & numérique</div>
+                <div class="skill">Systèmes embarqués</div>
+                <div class="skill">IoT & protocoles sans fil</div>
+                <div class="skill">Python / C / C++</div>
+                <div class="skill">YOLOv8 / TensorFlow</div>
+                <div class="skill">Raspberry Pi / Arduino</div>
+                <div class="skill">MQTT / Flask / API REST</div>
+                <div class="skill">Automatisation industrielle</div>
+                <div class="skill">Recherche & Développement</div>
+            </div>
+        </section>
+
+        <section class="tuto-section" id="tutoriels">
+            <div class="tuto-inner">
+                <div class="section-tag">Ressources pédagogiques</div>
+                <h2 class="section-title">Tutoriels</h2>
+                <p class="section-subtitle">Deux accès directs depuis l'accueil pour passer facilement aux pages de cours.</p>
+
+                <div class="tutorial-grid">
+                    <a href="tutorial-yolo.html" class="tutorial-card">
+                        <div class="tutorial-thumb">
+                            <div class="tutorial-icon">🎯</div>
+                            <div class="code-line">yolo detect train data=dataset.yaml model=yolov8n.pt</div>
+                        </div>
+                        <div class="tutorial-body">
+                            <div class="tags">
+                                <span class="tag">Python</span>
+                                <span class="tag">YOLOv8</span>
+                                <span class="tag">Vision</span>
+                            </div>
+                            <h3>Détection d'objets avec YOLOv8</h3>
+                            <p>Entraîner un modèle, tester les prédictions et préparer un déploiement webcam.</p>
+                        </div>
+                    </a>
+
+                    <a href="tutorial-arduino.html" class="tutorial-card">
+                        <div class="tutorial-thumb">
+                            <div class="tutorial-icon">🔌</div>
+                            <div class="code-line">pinMode(13, OUTPUT); digitalWrite(13, HIGH);</div>
+                        </div>
+                        <div class="tutorial-body">
+                            <div class="tags">
+                                <span class="tag">Arduino</span>
+                                <span class="tag">C++</span>
+                                <span class="tag">Embarqué</span>
+                            </div>
+                            <h3>Études & Réalisation Arduino S2</h3>
+                            <p>Microcontrôleur, LED, capteurs, LCD, ultrason, servo, clavier et RFID.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="contact">
+            <div class="section-tag">Me rejoindre</div>
+            <h2 class="section-title">Contact</h2>
+            <p class="section-subtitle">Ouvert aux collaborations académiques et aux projets de recherche appliquée.</p>
+            <div class="contact-grid">
+                <div class="contact-card"><div class="icon">🏛️</div><div><strong>Institution</strong><span>Université de Pau et des Pays de l'Adour</span></div></div>
+                <div class="contact-card"><div class="icon">📍</div><div><strong>Localisation</strong><span>Pau, Nouvelle-Aquitaine, France</span></div></div>
+                <div class="contact-card"><div class="icon">💼</div><div><strong>Fonction</strong><span>ATER - Enseignement & Recherche</span></div></div>
+                <div class="contact-card"><div class="icon">🔬</div><div><strong>Spécialités</strong><span>Électronique, Informatique, IoT, Vision par ordinateur</span></div></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <strong>Ababacar Sadikh FAYE</strong>
+            <span>© 2026 · ATER · Université de Pau et des Pays de l'Adour</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

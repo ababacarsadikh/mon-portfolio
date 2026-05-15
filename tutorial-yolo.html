@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoriel YOLOv8 - Détection d'objets | ASF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">ASF</a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Portfolio</a>
+            <a href="index.html#tutoriels" class="nav-link">Tutoriels</a>
+            <a href="tutorial-arduino.html" class="nav-link">Arduino</a>
+            <a href="tutorial-yolo.html" class="nav-link active">YOLOv8</a>
+            <button class="theme-toggle" type="button" data-theme-toggle>🌙</button>
+        </div>
+    </nav>
+
+    <header class="tutorial-hero">
+        <div class="hero-inner">
+            <div class="eyebrow">Vision par ordinateur · Python</div>
+            <h1>Détection d'objets avec <span class="gradient-text">YOLOv8</span></h1>
+            <p class="lead">Créer un environnement Python, préparer un dataset, entraîner un modèle YOLOv8 et tester la détection en image, vidéo ou webcam.</p>
+            <div class="btn-row">
+                <a href="index.html#tutoriels" class="btn">Retour aux tutoriels</a>
+                <a href="tutorial-arduino.html" class="btn btn-primary">Voir Arduino</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="toc">
+        <div class="toc-inner">
+            <a class="active" href="#installation">Installation</a>
+            <a href="#dataset">Dataset</a>
+            <a href="#entrainement">Entraînement</a>
+            <a href="#prediction">Prédiction</a>
+            <a href="#webcam">Webcam</a>
+        </div>
+    </div>
+
+    <main class="tutorial-layout">
+        <div>
+            <section class="lesson" id="installation">
+                <h2>1. Installation</h2>
+                <p>YOLOv8 est fourni par le paquet Python <code>ultralytics</code>. L'idéal est de travailler dans un environnement virtuel dédié.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Terminal</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>python -m venv .venv
+.venv\Scripts\activate
+pip install ultralytics opencv-python</pre>
+                </div>
+                <div class="callout">Après installation, la commande <code>yolo checks</code> permet de vérifier que l'environnement est prêt.</div>
+            </section>
+
+            <section class="lesson" id="dataset">
+                <h2>2. Préparer le dataset</h2>
+                <p>Un dataset YOLO contient les images et les annotations au format texte. Chaque ligne d'annotation décrit une classe et une boîte englobante normalisée.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Structure</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>dataset/
+  images/
+    train/
+    val/
+  labels/
+    train/
+    val/
+  dataset.yaml</pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-head"><span>dataset.yaml</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>path: dataset
+train: images/train
+val: images/val
+
+names:
+  0: objet</pre>
+                </div>
+            </section>
+
+            <section class="lesson" id="entrainement">
+                <h2>3. Entraîner un modèle</h2>
+                <p>Pour commencer rapidement, on peut utiliser <code>yolov8n.pt</code>, une version légère adaptée aux tests et aux machines modestes.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Commande YOLO</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>yolo detect train data=dataset/dataset.yaml model=yolov8n.pt epochs=50 imgsz=640</pre>
+                </div>
+                <ul>
+                    <li><code>epochs</code> règle le nombre de passages sur le dataset.</li>
+                    <li><code>imgsz</code> règle la taille des images utilisées pendant l'entraînement.</li>
+                    <li>Les résultats sont enregistrés dans <code>runs/detect/train</code>.</li>
+                </ul>
+            </section>
+
+            <section class="lesson" id="prediction">
+                <h2>4. Tester les prédictions</h2>
+                <p>Une fois l'entraînement terminé, le meilleur modèle se trouve généralement dans <code>runs/detect/train/weights/best.pt</code>.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Image ou vidéo</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>yolo detect predict model=runs/detect/train/weights/best.pt source=image.jpg
+yolo detect predict model=runs/detect/train/weights/best.pt source=video.mp4</pre>
+                </div>
+                <div class="callout">Si les détections sont instables, il faut souvent améliorer les annotations ou ajouter des exemples plus variés.</div>
+            </section>
+
+            <section class="lesson" id="webcam">
+                <h2>5. Détection webcam en Python</h2>
+                <p>OpenCV permet de lire la webcam et YOLOv8 peut annoter chaque frame en temps réel.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Python</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>import cv2
+from ultralytics import YOLO
+
+model = YOLO("runs/detect/train/weights/best.pt")
+cap = cv2.VideoCapture(0)
+
+while True:
+    ok, frame = cap.read()
+    if not ok:
+        break
+
+    results = model(frame)
+    annotated = results[0].plot()
+    cv2.imshow("YOLOv8", annotated)
+
+    if cv2.waitKey(1) &amp; 0xFF == ord("q"):
+        break
+
+cap.release()
+cv2.destroyAllWindows()</pre>
+                </div>
+            </section>
+
+            <a href="index.html#tutoriels" class="btn">Retour au portfolio</a>
+        </div>
+
+        <aside class="side">
+            <div class="side-card">
+                <h3>Navigation rapide</h3>
+                <a href="index.html">Accueil</a>
+                <a href="index.html#tutoriels">Tous les tutoriels</a>
+                <a href="tutorial-arduino.html">Tutoriel Arduino</a>
+            </div>
+            <div class="side-card">
+                <h3>Outils</h3>
+                <span>Python</span>
+                <span>Ultralytics YOLOv8</span>
+                <span>OpenCV</span>
+                <span>Dataset annoté</span>
+            </div>
+        </aside>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

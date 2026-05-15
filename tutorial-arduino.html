@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoriel Arduino - Études & Réalisation S2 | ASF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">ASF</a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Portfolio</a>
+            <a href="index.html#tutoriels" class="nav-link">Tutoriels</a>
+            <a href="tutorial-yolo.html" class="nav-link">YOLOv8</a>
+            <a href="tutorial-arduino.html" class="nav-link active">Arduino</a>
+            <button class="theme-toggle" type="button" data-theme-toggle>🌙</button>
+        </div>
+    </nav>
+
+    <header class="tutorial-hero">
+        <div class="hero-inner">
+            <div class="eyebrow">Cours complet · S2</div>
+            <h1>Études & Réalisation <span class="gradient-text">Arduino</span></h1>
+            <p class="lead">Du microcontrôleur aux capteurs avancés : tous les concepts, montages et programmes du cours, organisés pour une prise en main rapide.</p>
+            <div class="btn-row">
+                <a href="index.html#tutoriels" class="btn">Retour aux tutoriels</a>
+                <a href="tutorial-yolo.html" class="btn btn-primary">Voir YOLOv8</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="toc">
+        <div class="toc-inner">
+            <a class="active" href="#microcontroleur">Microcontrôleur</a>
+            <a href="#programmation">Programmation</a>
+            <a href="#led">LED & bouton</a>
+            <a href="#capteurs">Capteurs</a>
+            <a href="#rfid">RFID</a>
+        </div>
+    </div>
+
+    <main class="tutorial-layout">
+        <div>
+            <section class="lesson" id="microcontroleur">
+                <h2>1. Le microcontrôleur</h2>
+                <p>Un microcontrôleur rassemble CPU, mémoire et entrées/sorties sur une seule puce. Il est conçu pour piloter un système embarqué de manière autonome.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+                        <tbody>
+                            <tr><td>CPU</td><td>Exécute les instructions du programme.</td></tr>
+                            <tr><td>Flash</td><td>Conserve le sketch Arduino.</td></tr>
+                            <tr><td>SRAM</td><td>Stocke les variables pendant l'exécution.</td></tr>
+                            <tr><td>ADC</td><td>Convertit une tension analogique en valeur numérique.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="callout">À retenir : toutes les connexions doivent partager une masse commune avec la carte Arduino.</div>
+            </section>
+
+            <section class="lesson" id="programmation">
+                <h2>2. Structure d'un programme Arduino</h2>
+                <p>Un sketch Arduino utilise toujours un bloc de déclarations, une fonction <code>setup()</code> et une boucle <code>loop()</code>.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Arduino C++</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>int led = 13;
+
+void setup() {
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  digitalWrite(led, HIGH);
+  delay(1000);
+  digitalWrite(led, LOW);
+  delay(1000);
+}</pre>
+                </div>
+            </section>
+
+            <section class="lesson" id="led">
+                <h2>3. LED & bouton poussoir</h2>
+                <p>Une LED doit toujours être protégée par une résistance, généralement entre 220Ω et 330Ω sous 5V. Le bouton permet de lire une entrée numérique.</p>
+                <div class="code-block">
+                    <div class="code-head"><span>Bouton sur D8, LED sur D13</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>int led = 13;
+int bouton = 8;
+
+void setup() {
+  pinMode(led, OUTPUT);
+  pinMode(bouton, INPUT);
+}
+
+void loop() {
+  int etat = digitalRead(bouton);
+  digitalWrite(led, etat == HIGH ? HIGH : LOW);
+}</pre>
+                </div>
+                <ul>
+                    <li>TP1 : réaliser un feu tricolore avec 3 LED.</li>
+                    <li>TP2 : ajouter un feu piéton commandé par bouton.</li>
+                    <li>TP3 : créer un compteur sur afficheur 7 segments.</li>
+                </ul>
+            </section>
+
+            <section class="lesson" id="capteurs">
+                <h2>4. Capteurs et actionneurs</h2>
+                <p>Le cours peut intégrer une photorésistance, un DHT11, un LCD 16x2, un HC-SR04 et un servomoteur SG90.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Composant</th><th>Usage</th><th>Bibliothèque</th></tr></thead>
+                        <tbody>
+                            <tr><td>DHT11</td><td>Température & humidité</td><td>DHT.h</td></tr>
+                            <tr><td>LCD 16x2</td><td>Affichage local</td><td>LiquidCrystal.h</td></tr>
+                            <tr><td>HC-SR04</td><td>Distance ultrason</td><td>HCSR04.h ou calcul manuel</td></tr>
+                            <tr><td>Servo SG90</td><td>Position angulaire</td><td>Servo.h</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="code-block">
+                    <div class="code-head"><span>Servo + potentiomètre</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>#include &lt;Servo.h&gt;
+
+Servo monServo;
+int pinPot = A0;
+
+void setup() {
+  monServo.attach(9);
+}
+
+void loop() {
+  int valeur = analogRead(pinPot);
+  int angle = map(valeur, 0, 1023, 0, 180);
+  monServo.write(angle);
+}</pre>
+                </div>
+            </section>
+
+            <section class="lesson" id="rfid">
+                <h2>5. RFID RC522</h2>
+                <p>Le module RC522 lit l'identifiant unique d'un badge via SPI. Il doit être alimenté en 3.3V, jamais en 5V.</p>
+                <div class="callout">Brochage courant : SDA→10, SCK→13, MOSI→11, MISO→12, RST→9, GND→GND, 3.3V→3.3V.</div>
+                <div class="code-block">
+                    <div class="code-head"><span>Lecture UID</span><button class="copy-btn" data-copy>Copier</button></div>
+                    <pre>#include &lt;SPI.h&gt;
+#include &lt;MFRC522.h&gt;
+
+#define RST_PIN 9
+#define SS_PIN 10
+
+MFRC522 rfid(SS_PIN, RST_PIN);
+
+void setup() {
+  Serial.begin(9600);
+  SPI.begin();
+  rfid.PCD_Init();
+}
+
+void loop() {
+  if (!rfid.PICC_IsNewCardPresent()) return;
+  if (!rfid.PICC_ReadCardSerial()) return;
+  rfid.PICC_DumpToSerial(&(rfid.uid));
+}</pre>
+                </div>
+            </section>
+
+            <a href="index.html#tutoriels" class="btn">Retour au portfolio</a>
+        </div>
+
+        <aside class="side">
+            <div class="side-card">
+                <h3>Navigation rapide</h3>
+                <a href="index.html">Accueil</a>
+                <a href="index.html#tutoriels">Tous les tutoriels</a>
+                <a href="tutorial-yolo.html">Tutoriel YOLOv8</a>
+            </div>
+            <div class="side-card">
+                <h3>Matériel</h3>
+                <span>Arduino Uno</span>
+                <span>Breadboard + jumpers</span>
+                <span>LED + résistances</span>
+                <span>DHT11, LCD, HC-SR04</span>
+                <span>Servo SG90, RC522</span>
+            </div>
+        </aside>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
